@@ -10,4 +10,8 @@ rt64-0001    F3DFLX2, the game's own microcode: drawn as F3DEX2 (RT64's database
              each vertex's alpha from the table G_DMA_IO points at by the normal's angle to that light and leaves its
              texture coordinates alone; the machines' paint and shading come from it. Frame matching pairs look ats
              only for vertices that have one.
+rt64-0002    A camera's interpolation: the camera's own transform, the view's inverse, is what is blended between two
+             game frames, not the view. The view's translation is the eye in the view's axes, so blending it put the
+             eye of a camera far from the course's origin (12,000 units) up to 25 units off the line between its two
+             places as it turned, and the machine in front of it swung in the frames between.
 ```
