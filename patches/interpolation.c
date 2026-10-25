@@ -21,9 +21,19 @@
 // so the first other matrix the list loads after a tagged one is wrapped the same way with RT64's own untagged group.
 // The lists are this file's, a set for each of the game's two gfx pools, written while the game builds a frame in one
 // pool and RT64 may still read the other's.
+//
+// The machines' boosters (their exhaust glow) are drawn after aSetupBoosterDL with an identity model matrix, their
+// vertices put in world space each frame from the racer's matrix and the camera's axes, one load of the effects buffer
+// per racer drawn (Racer_Draw's loop, from the last racer to the first, those with no boosters or crashed or spinning
+// out left out). Untagged they kept the place of the game frame they were drawn in while the machine around them was
+// interpolated, a frame ahead of it at speed. Each load gets the racer's id, with the view, and an identity load of
+// its own, so RT64 has a transform for it and blends its vertices from the frame before's (G_EX_COMPONENT_INTERPOLATE
+// for the vertices). RT64 takes the group current at a transform's first vertex, so what is drawn after the boosters
+// (the time trial's ghosts' boosters, the list after them) is given its own untagged transform the same way.
 
 #include "patches.h"
 #include "fzx_camera.h"
+#include "fzx_racer.h"
 #include "rt64_extended_gbi.h"
 
 // src/sys/sys_gfx.c's, which no header declares.
@@ -62,7 +72,7 @@ static MtxF sIdentity = { { { 1.0f, 0.0f, 0.0f, 0.0f },
                             { 0.0f, 0.0f, 0.0f, 1.0f } } };
 
 // src/game/racer.c's.
-extern s32 gTotalRacers;
+extern Racer* sLastRacer;
 extern Gfx aSetupBoosterDL[];
 
 // The index of a matrix in the gfx pool's array at start, of count, or -1.
@@ -128,6 +138,44 @@ static Gfx* write_projection_group(Gfx* gfx, u32 id) {
     return gfx;
 }
 
+// A booster's: its vertices interpolated, from the frame before's of the same id.
+static Gfx* write_booster_group(Gfx* gfx, u32 id) {
+    gEXMatrixGroup(gfx++, id, G_EX_INTERPOLATE_SIMPLE, G_EX_NOPUSH, G_MTX_MODELVIEW, G_EX_COMPONENT_AUTO,
+                   G_EX_COMPONENT_AUTO, G_EX_COMPONENT_AUTO, G_EX_COMPONENT_AUTO, G_EX_COMPONENT_AUTO,
+                   G_EX_COMPONENT_INTERPOLATE, G_EX_COMPONENT_AUTO, G_EX_ORDER_AUTO, G_EX_EDIT_NONE, G_EX_ASPECT_AUTO,
+                   G_EX_COMPONENT_SKIP, G_EX_COMPONENT_AUTO);
+    return gfx;
+}
+
+// The identity model matrix the boosters are drawn with, loaded again so what follows has a transform of its own
+// (G_MTX_PUSH for no push, gEXMatrixFloat's flags being gSPMatrix's as F3DEX2 sends them).
+static Gfx* write_identity(Gfx* gfx) {
+    gEXMatrixFloat(gfx++, OS_K0_TO_PHYSICAL(&sIdentity), G_MTX_LOAD | G_MTX_MODELVIEW | G_MTX_PUSH);
+    return gfx;
+}
+
+// The ids of the racers whose boosters Racer_Draw draws, in the order it draws them.
+static s32 booster_racers(s32* ids) {
+    Racer* racer;
+    s32 count = 0;
+
+    for (racer = sLastRacer; (racer >= gRacers) && (count < RACER_COUNT); racer--) {
+        if ((racer->unk_2B3 == 0) || (racer->stateFlags & (RACER_STATE_CRASHED | RACER_STATE_SPINNING_OUT))) {
+            continue;
+        }
+
+        ids[count++] = racer->id;
+    }
+
+    return count;
+}
+
+static bool is_effects_vertex(u32 address) {
+    u32 start = (u32) gGfxPool->effectsVtxBuffer;
+
+    return (address >= start) && (address < start + sizeof(gGfxPool->effectsVtxBuffer));
+}
+
 // A camera's projection and view, in that order, which is the matrix the game loads: gEXMatrixFloat's flags go to RT64
 // as gSPMatrix's do in F3DEX2, the push flag inverted, which a projection doesn't use.
 static Gfx* write_camera(Gfx* gfx, Camera* camera, s32 index) {
@@ -145,11 +193,17 @@ static void tag_list(Gfx* start, Gfx* end) {
     s32 count = 0;
     bool modelTagged = false;
     bool projectionTagged = false;
+    s32 boosterIds[RACER_COUNT];
+    s32 boosterCount = booster_racers(boosterIds);
+    s32 boosterIndex = 0;
+    s32 boosterView = -1;
+    bool inBoosters = false;
     Gfx* gfx;
 
     for (gfx = start; (gfx < end) && (count < TAG_LIST_COUNT); gfx++) {
         u32 w0 = gfx->words.w0;
         u32 address = gfx->words.w1;
+        u8 op = w0 >> 24;
         Camera* camera = NULL;
         s32 cameraIndex = -1;
         bool projection;
@@ -157,9 +211,57 @@ static void tag_list(Gfx* start, Gfx* end) {
         Gfx* list;
         Gfx* cmd;
 
-        if ((w0 >> 24) != (u8) G_MTX) {
+        if (op == (u8) G_DL) {
+            if (address == (u32) aSetupBoosterDL) {
+                inBoosters = true;
+                boosterIndex = 0;
+                boosterView++;
+                continue;
+            }
+
+            // The list the boosters' stretch ends on, called (not branched to) under a booster's or a racer's group.
+            if (!inBoosters || !modelTagged || (((w0 >> 16) & 0xFF) != G_DL_PUSH)) {
+                inBoosters = false;
+                continue;
+            }
+
+            inBoosters = false;
+            modelTagged = false;
+            list = lists[count++];
+            cmd = write_model_group(list, G_EX_ID_AUTO);
+            cmd = write_identity(cmd);
+            *cmd++ = *gfx;
+            gSPEndDisplayList(cmd++);
+            gSPDisplayList(gfx, OS_K0_TO_PHYSICAL(list));
             continue;
         }
+
+        if (op == (u8) G_VTX) {
+            if (!inBoosters || !is_effects_vertex(address)) {
+                continue;
+            }
+
+            id = (boosterIndex < boosterCount) ? FZX_VIEW_ID(KIND_BOOSTER, boosterView, boosterIds[boosterIndex]) : 0;
+            boosterIndex++;
+            if ((id == 0) && !modelTagged) {
+                continue;
+            }
+
+            modelTagged = (id != 0);
+            list = lists[count++];
+            cmd = (id != 0) ? write_booster_group(list, id) : write_model_group(list, G_EX_ID_AUTO);
+            cmd = write_identity(cmd);
+            *cmd++ = *gfx;
+            gSPEndDisplayList(cmd++);
+            gSPDisplayList(gfx, OS_K0_TO_PHYSICAL(list));
+            continue;
+        }
+
+        if (op != (u8) G_MTX) {
+            continue;
+        }
+
+        inBoosters = false;
 
         projection = (((w0 & 0xFF) ^ G_MTX_PUSH) & G_MTX_PROJECTION) != 0;
         if (projection) {
