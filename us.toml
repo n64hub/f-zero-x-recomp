@@ -1,0 +1,21 @@
+# N64Recomp's configuration for F-Zero X (USA), SHA-1 5f658e88ffa9de23cba6986a8fd3d3a90d7b4340: it reads the game's
+# code out of the ROM by the symbols tools/gen_syms.sh dumps from the decomp's ELF, and writes RecompiledFuncs/
+# (tools/recompile.sh). The code is stored raw in the ROM (MIO0 holds only textures and models), so there is nothing to
+# decompress first.
+[input]
+# The decomp's entrypoint (asm/us/rev0/entrypoint.s). The ROM's header says 0x80267000: the CIC-6106 boot code jumps
+# 0x200000 below what the header says.
+entrypoint = 0x80067000
+# Paths are relative to this file.
+symbols_file_path = "syms/fzerox.us.syms.toml"
+rom_file_path = "roms/fzerox.us.z64"
+output_func_path = "RecompiledFuncs"
+use_absolute_symbols = true
+
+[patches]
+# Functions recompiled as empty ones.
+stubs = [
+    # The 64DD's boot of a disk game (src/leo/leo_bootstrap.s), reached only with a 64DD attached, which the runtime
+    # never reports: it writes to its stack at an offset N64Recomp can't analyze.
+    "__LeoBootGame2",
+]

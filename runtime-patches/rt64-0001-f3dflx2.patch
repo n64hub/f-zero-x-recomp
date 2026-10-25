@@ -1,0 +1,170 @@
+diff --git a/src/gbi/rt64_gbi.cpp b/src/gbi/rt64_gbi.cpp
+index 7006549..0663714 100644
+--- a/src/gbi/rt64_gbi.cpp
++++ b/src/gbi/rt64_gbi.cpp
+@@ -94,7 +94,7 @@ namespace RT64 {
+     const GBIInstance   F3DLX_NON_1_23_A          = { "F3DLX.NoN 1.23 (Variant)",                  GBIUCode::F3DEX,       { true,   true,   false,  false,  false } }; // Needs confirmation.
+     const GBIInstance   F3DEX2_FIFO_2_03          = { "F3DEX2.fifo 2.03",                          GBIUCode::F3DEX2,      { false,  false,  false,  false,  false } }; // Needs confirmation.
+     const GBIInstance   F3DLX2_FIFO_2_03_REJ      = { "F3DLX2.fifo 2.03.Rej",                      GBIUCode::F3DEX2,      { true,   false,  true,   false,  false } }; // Needs confirmation.
+-    const GBIInstance   F3DFLX2_FIFO_2_03F_REJ    = { "F3DFLX2.fifo 2.03F.ReJ",                    GBIUCode::Unknown,     { true,   false,  true,   false,  false } }; // Needs confirmation.
++    const GBIInstance   F3DFLX2_FIFO_2_03F_REJ    = { "F3DFLX2.fifo 2.03F.ReJ",                    GBIUCode::F3DEX2,      { true,   false,  true,   false,  false,  true  } };
+     const GBIInstance   F3DEX2_FIFO_2_04          = { "F3DEX2.fifo 2.04",                          GBIUCode::F3DEX2,      { false,  false,  false,  false,  false } }; // Needs confirmation.
+     const GBIInstance   F3DEX2_FIFO_2_04H         = { "F3DEX2.fifo 2.04H",                         GBIUCode::F3DEX2,      { false,  false,  false,  true,   false } };
+     const GBIInstance   F3DEX2_FIFO_2_05          = { "F3DEX2.fifo 2.05",                          GBIUCode::F3DEX2,      { false,  false,  false,  false,  false } };
+diff --git a/src/gbi/rt64_gbi.h b/src/gbi/rt64_gbi.h
+index 69c35d2..58d0123 100644
+--- a/src/gbi/rt64_gbi.h
++++ b/src/gbi/rt64_gbi.h
+@@ -37,6 +37,9 @@ namespace RT64 {
+         bool ReJ = false;
+         bool computeMVP = false;
+         bool pointLighting = false;
++        // F3DFLX2: lookat 1 is an alpha light, and texture gen sets the vertex's alpha from the table G_DMA_IO points at
++        // instead of its texture coordinates.
++        bool alphaLight = false;
+     };
+ 
+     struct GBIInstance {
+diff --git a/src/gbi/rt64_gbi_f3dex2.cpp b/src/gbi/rt64_gbi_f3dex2.cpp
+index 16b4b9c..3ad3d9d 100644
+--- a/src/gbi/rt64_gbi_f3dex2.cpp
++++ b/src/gbi/rt64_gbi_f3dex2.cpp
+@@ -48,6 +48,9 @@ namespace RT64 {
+                 if (index >= 2) {
+                     state->rsp->setLight(index - 2, (*dl)->w1);
+                 }
++                else if ((index == 1) && state->ext.interpreter->hleGBI->flags.alphaLight) {
++                    state->rsp->setAlphaLight((*dl)->w1);
++                }
+                 else {
+                     state->rsp->setLookAt(index, (*dl)->w1);
+                 }
+@@ -117,7 +120,11 @@ namespace RT64 {
+         }
+ 
+         void dmaIO(State *state, DisplayList **dl) {
+-            // Do nothing. This is not possible to implement without RSP computations in the CPU.
++            // F3DFLX2 points at its texture gen's alpha table with it. Otherwise do nothing: this is not possible to
++            // implement without RSP computations in the CPU.
++            if (state->ext.interpreter->hleGBI->flags.alphaLight) {
++                state->rsp->setDmaIO((*dl)->w1);
++            }
+         }
+ 
+         void special1(State *state, DisplayList **dl) {
+diff --git a/src/hle/rt64_game_frame.cpp b/src/hle/rt64_game_frame.cpp
+index 7066b8f..2c2bdd3 100644
+--- a/src/hle/rt64_game_frame.cpp
++++ b/src/hle/rt64_game_frame.cpp
+@@ -627,9 +627,12 @@ namespace RT64 {
+                     // FIXME: We assume the same look at is used throughout the entire draw call, so we only check the first vertex.
+                     const uint32_t curVertexIndex = curWorkload.drawData.faceIndices[curCall.meshDesc.faceIndicesStart];
+                     const uint32_t prevVertexIndex = prevWorkload.drawData.faceIndices[prevCall.meshDesc.faceIndicesStart];
+-                    const uint32_t curLookAtIndex = curWorkload.drawData.lookAtIndices[curVertexIndex] >> RSP_LOOKAT_INDEX_SHIFT;
+-                    const uint32_t prevLookAtIndex = prevWorkload.drawData.lookAtIndices[prevVertexIndex] >> RSP_LOOKAT_INDEX_SHIFT;
+-                    lookAtCheckSet.emplace_back(curLookAtIndex, prevLookAtIndex);
++                    // A call whose texture gen sets no coordinates (F3DFLX2's alpha light) has no look at.
++                    const uint32_t curLookAtIndex = curWorkload.drawData.lookAtIndices[curVertexIndex];
++                    const uint32_t prevLookAtIndex = prevWorkload.drawData.lookAtIndices[prevVertexIndex];
++                    if ((curLookAtIndex & RSP_LOOKAT_INDEX_ENABLED) && (prevLookAtIndex & RSP_LOOKAT_INDEX_ENABLED)) {
++                        lookAtCheckSet.emplace_back(curLookAtIndex >> RSP_LOOKAT_INDEX_SHIFT, prevLookAtIndex >> RSP_LOOKAT_INDEX_SHIFT);
++                    }
+                 }
+             }
+         }
+diff --git a/src/hle/rt64_rsp.cpp b/src/hle/rt64_rsp.cpp
+index a2d33d3..0da1379 100644
+--- a/src/hle/rt64_rsp.cpp
++++ b/src/hle/rt64_rsp.cpp
+@@ -85,6 +85,8 @@ namespace RT64 {
+         fog.offset = 0.0f;
+         lookAt.x = { 0.0f, 0.0f, 0.0f };
+         lookAt.y = { 0.0f, 0.0f, 0.0f };
++        alphaLight = { 0.0f, 0.0f, 0.0f };
++        dmaIOAddress = 0;
+         otherModeStack[0].L = 0x0;
+         otherModeStack[0].H = 0x080CFF;
+         geometryModeStack[0] = G_CLIPPING;
+@@ -639,7 +641,9 @@ namespace RT64 {
+         }
+ 
+         const uint32_t textureGenMask = G_LIGHTING | G_TEXTURE_GEN;
+-        const bool usesTextureGen = (geometryMode & textureGenMask) == textureGenMask;
++        const bool usesTextureGenMode = (geometryMode & textureGenMask) == textureGenMask;
++        const bool usesAlphaLight = usesTextureGenMode && curGBI->flags.alphaLight;
++        const bool usesTextureGen = usesTextureGenMode && !usesAlphaLight;
+         if (usesTextureGen) {
+             if (lookAtChanged) {
+                 auto &rspLookAtVector = workload.drawData.rspLookAt;
+@@ -703,6 +707,25 @@ namespace RT64 {
+             }
+         }
+ 
++        // F3DFLX2's texture gen: the vertex's alpha is the byte of the G_DMA_IO table the normal's angle to the alpha light
++        // picks, 128 bytes in plus 128 times their dot product, with the light in model space as the RSP's.
++        if (usesAlphaLight) {
++            const hlslpp::float4x4 &modelView = modelMatrixStack[modelMatrixStackSize - 1];
++            const hlslpp::float3x3 rotation(modelView);
++            hlslpp::float3 modelLight = hlslpp::mul(rotation, alphaLight);
++            const float modelLightLength = hlslpp::length(modelLight);
++            if (modelLightLength > 0.0f) {
++                modelLight /= modelLightLength;
++            }
++
++            for (uint32_t i = dstIndex; i < dstMax; i++) {
++                const auto &n = vertices[i].normal;
++                const hlslpp::float3 normal(float(n.x) / 128.0f, float(n.y) / 128.0f, float(n.z) / 128.0f);
++                const int32_t index = std::clamp(int32_t(float(hlslpp::dot(normal, modelLight)) * 128.0f), -128, 127);
++                normColBytes[(globalIndex + (i - dstIndex)) * 4 + 3] = state->RDRAM[(dmaIOAddress + 128 + index) ^ 3];
++            }
++        }
++
+         readExtendedVertexSegment<3, vertexSize>(rdramAddress, dstIndex, dstMax, globalIndex, G_EX_VERTEX_POSITION, posFloats);
+         readExtendedVertexSegment<3, vertexSize>(rdramAddress, dstIndex, dstMax, globalIndex, G_EX_VERTEX_VELOCITY, velFloats);
+ 
+@@ -981,6 +1004,23 @@ namespace RT64 {
+         lookAtChanged = true;
+     }
+ 
++    void RSP::setAlphaLight(uint32_t address) {
++        // Its direction is three s16s 8 bytes in, as 8.8 fixed point.
++        const uint32_t rdramAddress = fromSegmentedMasked(address);
++        const int16_t *data = reinterpret_cast<const int16_t *>(state->fromRDRAM(rdramAddress));
++        const int16_t x = data[4 ^ 1], y = data[5 ^ 1], z = data[6 ^ 1];
++        if ((x != 0) || (y != 0) || (z != 0)) {
++            alphaLight = hlslpp::normalize(hlslpp::float3(float(x), float(y), float(z)));
++        }
++        else {
++            alphaLight = { 0.0f, 0.0f, 0.0f };
++        }
++    }
++
++    void RSP::setDmaIO(uint32_t address) {
++        dmaIOAddress = fromSegmentedMasked(address);
++    }
++
+     void RSP::setLookAtVectors(interop::float3 x, interop::float3 y) {
+         lookAt.x = x;
+         lookAt.y = y;
+diff --git a/src/hle/rt64_rsp.h b/src/hle/rt64_rsp.h
+index 61bb3b1..f3d71ff 100644
+--- a/src/hle/rt64_rsp.h
++++ b/src/hle/rt64_rsp.h
+@@ -171,6 +171,8 @@ namespace RT64 {
+         bool lightsChanged;
+         bool lookAtChanged;
+         interop::RSPLookAt lookAt;
++        hlslpp::float3 alphaLight;
++        uint32_t dmaIOAddress;
+         std::array<interop::OtherMode, RSP_EXTENDED_STACK_SIZE> otherModeStack;
+         int otherModeStackSize;
+         std::array<uint32_t, RSP_EXTENDED_STACK_SIZE> geometryModeStack;
+@@ -279,6 +281,8 @@ namespace RT64 {
+         void setPerspNorm(uint32_t perspNorm);
+         void setLookAt(uint8_t index, uint32_t address);
+         void setLookAtVectors(interop::float3 x, interop::float3 y);
++        void setAlphaLight(uint32_t address);
++        void setDmaIO(uint32_t address);
+         void setFog(int16_t mul, int16_t offset);
+         void branchZ(uint32_t branchDl, uint16_t vtxIndex, uint32_t zValue, DisplayList **dl);
+         void branchW(uint32_t branchDl, uint16_t vtxIndex, uint32_t wValue, DisplayList **dl);

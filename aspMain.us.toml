@@ -1,0 +1,28 @@
+# RSPRecomp's configuration for F-Zero X (USA)'s audio microcode, aspMain. Graphics tasks go to RT64; the audio tasks
+# the game sends need this microcode recompiled to run (src/main/main.cpp, get_rsp_microcode). tools/recompile.sh
+# writes it into RecompiledFuncs/.
+#
+# - The text is aspMainTextStart in the decomp (rsp/aspmain, a textbin in its main.yaml at ROM 0x66270), 0xD30 bytes
+#   up to the main segment's data at 0x66FA0.
+# - text_address is the IMEM address its first byte runs at, 0x04001000, as Zelda64Recomp has its aspMain: the DMA
+#   routines its code calls at 0x1114 and 0x1140 are 0x114 and 0x140 bytes into the text, and its jump back to the
+#   command loop at 0x1064 lands in its own code. The function runs from the first instruction, which reads the task's
+#   ucode_data into DMEM.
+# - The command handlers are reached through a table in the data segment, which RSPRecomp can't find by following
+#   the instructions, so they are listed below: the data's halfwords from offset 0x10 (aspMainDataStart, ROM 0x71CA0)
+#   up to the 0x0000 at 0x4C, 30 commands, one handler for the ones the microcode doesn't have (0x10A8).
+
+rom_file_path = "roms/fzerox.us.z64"
+text_offset = 0x66270
+text_size = 0xD30
+text_address = 0x04001000
+
+# C++, not C: the output includes librecomp's RSP header. CMakeLists.txt builds RecompiledFuncs/*.cpp with the game.
+output_file_path = "RecompiledFuncs/aspMain_rsp.cpp"
+output_function_name = "aspMain_run"
+
+extra_indirect_branch_targets = [
+    0x1CD0, 0x1250, 0x116C, 0x10A8, 0x1C60, 0x14D8, 0x119C, 0x1208,
+    0x1AF8, 0x1B14, 0x11B0, 0x1240, 0x1788, 0x1834, 0x1A58, 0x1888,
+    0x1ABC, 0x1AE0, 0x1A80, 0x1B80, 0x17D0,
+]
