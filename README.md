@@ -16,8 +16,9 @@ git or CI is made from one except the symbol names and addresses in `syms/`.
 **Status:** the desktop build boots to the title, plays the attract demo's races (split screen too) and goes through
 the menus into a Grand Prix race, with sound (the audio microcode recompiled), SRAM saves and keyboard and gamepad
 input. The game's own graphics microcode, F3DFLX2, is drawn with its alpha light, which gives the machines their paint
-and shading (`runtime-patches/`). Interpolation to the display's rate, widescreen, the modern enhancements and the web
-page come next.
+and shading (`runtime-patches/`). Races interpolate to the display's rate (`patches/interpolation.c`): each camera,
+machine, shadow and booster glow is blended between two game frames by who it is. Widescreen, the modern enhancements
+and the web page come next.
 
 ## The ROM
 
