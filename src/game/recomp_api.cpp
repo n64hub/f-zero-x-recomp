@@ -4,6 +4,10 @@
 #include "librecomp/overlays.hpp"
 #include "librecomp/helpers.hpp"
 #include "librecomp/game.hpp"
+#include "ultramodern/config.hpp"
+#include "recompui/recompui.h"
+
+#include <algorithm>
 
 // recomp_load_overlays(rom, ram, size): the code sections in that stretch of ROM are now at ram (patches/overlays.c).
 extern "C" void recomp_load_overlays(uint8_t* rdram, recomp_context* ctx) {
@@ -25,4 +29,18 @@ extern "C" void recomp_rom_read(uint8_t* rdram, recomp_context* ctx) {
     }
     _return<u32>(ctx, (u32(rom[offset]) << 24) | (u32(rom[offset + 1]) << 16) | (u32(rom[offset + 2]) << 8) |
                           u32(rom[offset + 3]));
+}
+
+// recomp_get_aspect_ratio(original): the picture's aspect ratio, the window's with Aspect Ratio Expand (never narrower
+// than original), else original (patches/widescreen.c).
+extern "C" void recomp_get_aspect_ratio(uint8_t* rdram, recomp_context* ctx) {
+    float original = _arg<0, float>(rdram, ctx);
+    int width, height;
+    recompui::get_window_size(width, height);
+    if (ultramodern::renderer::get_graphics_config().ar_option != ultramodern::renderer::AspectRatio::Expand ||
+        height <= 0) {
+        _return(ctx, original);
+        return;
+    }
+    _return(ctx, std::max(static_cast<float>(width) / height, original));
 }
