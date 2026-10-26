@@ -333,7 +333,9 @@ RECOMP_PATCH void Transition_SetBackgroundBuffer(void) {
 }
 
 // The decomp's Transition_FadeDraw, with a race's fade, in a picture wider than 4:3, drawn to the picture's edges as the
-// race is. A framed screen's is enlarged with its frame.
+// race is: a rectangle as wide as its scissor, the whole 320, which RT64 stretches to the window's width, as
+// Widescreen_FillFrame's. Extended origins would place it from a 16:9 picture's edges (HUD Placement), short of a wider
+// window's. A framed screen's is enlarged with its frame.
 RECOMP_PATCH Gfx* Transition_FadeDraw(Gfx* gfx, Transition* transition) {
     TransitionInfo* fadeInfo = &transition->transitionInfo;
 
@@ -347,8 +349,8 @@ RECOMP_PATCH Gfx* Transition_FadeDraw(Gfx* gfx, Transition* transition) {
 
     if (!Widescreen_IsFramedScreen(GET_MODE(gGameMode)) && (recomp_get_aspect_ratio(4.0f / 3.0f) > 4.0f / 3.0f)) {
         gEXPushScissor(gfx++);
-        gEXSetScissor(gfx++, G_SC_NON_INTERLACE, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, 0, 0, SCREEN_HEIGHT);
-        gEXFillRectangle(gfx++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, 0, 0, SCREEN_HEIGHT);
+        gDPSetScissor(gfx++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        gDPFillRectangle(gfx++, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         gEXPopScissor(gfx++);
     } else {
         gDPFillRectangle(gfx++, TRANSITION_BORDER_WIDTH, TRANSITION_BORDER_HEIGHT,
