@@ -29,6 +29,14 @@ Expand and HUD Placement 16:9 by default, Original for the console's 4:3 and its
 *F-Zero X* (USA), the first release (`CFZE`), as a big-endian `.z64` of 16 MiB with SHA-1
 `5f658e88ffa9de23cba6986a8fd3d3a90d7b4340`. Other regions, revisions and the 64DD's Expansion Kit are not supported.
 
+## Getting it
+
+Releases for Windows (a zip: unzip it and run `FZeroXRecompiled.exe` from that folder) and Linux on x86-64 (a
+`.tar.gz`: extract it and run `FZeroXRecompiled` in that folder) are on the
+[Releases page](https://github.com/n64hub/f-zero-x-recomp/releases), without the ROM: pick yours with Load ROM.
+The Linux build needs glibc 2.35 or newer (Ubuntu 22.04, Debian 12 or later), a Vulkan driver, and GTK 3 and FreeType,
+which desktop distributions have; it brings its own SDL2. Or build it as below.
+
 ## Building
 
 You need that ROM at `roms/fzerox.us.z64`. On Windows: LLVM's clang-cl, CMake 3.31 and Ninja, and a clang with a MIPS
@@ -51,6 +59,10 @@ ninja -C build FZeroXRecompiled
 
 The symbols in `syms/` are made from the decomp's own build of the game (`tools/build_decomp.sh`, which needs the ROM
 and Docker, then `tools/gen_syms.sh`). They only change when `lib/fzerox` moves.
+
+A release is built by `tools/release.sh`: `windows` (Git Bash) and `linux` (Linux with Docker) build and pack its
+two archives into `out/` from the same commit of `main`, and `publish` publishes them as the GitHub release
+`v<version_string>` (`src/main/main.cpp`) with `releases/v<version>.md` as its notes (the script's header says more).
 
 ## License
 
