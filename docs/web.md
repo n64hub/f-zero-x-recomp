@@ -50,10 +50,11 @@ the pause menu's Quit to the main menu and a minute on Rainbow Road. Play them w
 
 ## The shader list
 
-`src/rt64_shaders.txt` holds 75 shaders: 5 for the boot (the launcher, the title and the main menu), then a section a
+`src/rt64_shaders.txt` holds 76 shaders: 6 for the boot (the launcher, the title and the main menu), then a section a
 course, the 24 of the Jack, Queen, King and Joker cups, 53-63 a section, most of them in every section. It was recorded
 in headless Chrome at 1256x645 by `tools/record_shaders.sh`, a page load a course, about 30 minutes in all; its header
-says what each section played and what it leaves out.
+says what each section played and what it leaves out. The boot's sixth, the menus' frame enlarged to a picture wider
+than 4:3 (`patches/widescreen.c`), was recorded the same way after, with `--only mute-city`.
 
 ## How it plays
 
