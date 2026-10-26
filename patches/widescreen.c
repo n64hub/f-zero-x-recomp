@@ -161,12 +161,12 @@ RECOMP_PATCH Gfx* Camera_Draw(Gfx* gfx, s32 scissorBoxType, s32 cameraIndex) {
     return gfx;
 }
 
-// The decomp's func_80069698 (src/game/game.c), which draws a screen, in a picture wider than 4:3 with a screen drawn in
-// the game's 12, 8, 308, 232 frame (the menus, Records, the GP's ending) enlarged to the whole picture, and the whole
-// picture cleared to black first for the first three frames of each screen. Races of one or two players and the menus
-// now draw to the picture's edges, while three or four players' quarters, and the lines above and between two
-// players' halves, never clear there, so the last screen's picture stayed beside them. On a console nothing is drawn
-// there and it stays black, and three frames clear each of the game's three framebuffers once.
+// The decomp's func_80069698 (src/game/game.c), which draws a screen, in a picture wider than 4:3 with a screen drawn
+// in the game's 12, 8, 308, 232 frame (the title, the menus, Records, the GP's ending) enlarged to the whole picture,
+// and the whole picture cleared to black first for the first three frames of each screen. Races of one or two players,
+// the title and the menus now draw to the picture's edges, while three or four players' quarters, and the lines above
+// and between two players' halves, never clear there, so the last screen's picture stayed beside them. On a console
+// nothing is drawn there and it stays black, and three frames clear each of the game's three framebuffers once.
 extern s32 gGameModeChangeState;
 extern s16 D_i2_80106DA0;
 extern Gfx* (*sGamemodeDrawFuncs[])(Gfx*);
@@ -195,11 +195,10 @@ extern s32 D_800DCCFC;
 extern s32 D_800DCD04;
 extern FrameBuffer* gFrameBuffers[];
 
-// Whether a screen is drawn in the game's frame: all but the title's and the races', which draw to the picture's edges
-// (the title's is the attract demo's race), and a race of three or four players keeps its own.
+// Whether a screen is drawn in the game's frame: all but the races', which draw to the picture's edges, and a race of
+// three or four players keeps its own. The title is framed too: the attract demo races in the race's modes.
 static bool Widescreen_IsFramedScreen(s32 mode) {
     switch (mode) {
-        case GAMEMODE_TITLE:
         case GAMEMODE_GP_RACE:
         case GAMEMODE_PRACTICE:
         case GAMEMODE_VS_2P:
