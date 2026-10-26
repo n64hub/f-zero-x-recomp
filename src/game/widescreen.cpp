@@ -74,10 +74,11 @@ extern "C" void fzx_hud_align(uint8_t* rdram, gpr* gfx, int side) {
 }
 
 // *gfx is Race_Draw's display list pointer, just past the game's depth clear (D_303A8F8 or D_303A810), moved past the
-// commands. They are that list's, with the scissor and the rectangle from the picture's edges.
+// commands. They are that list's, with the scissor and the rectangle from the picture's edges. The rectangle ends at the
+// right edge itself, not a column before it: RT64 drops one whose lrx is less than its ulx before it places them, and
+// a fill's right side is inclusive, so the scissor cuts it there.
 extern "C" void fzx_race_clear_depth(uint8_t* rdram, gpr* gfx) {
     constexpr uint32_t depth_image = 0x003DBC00;                 // The lists' gsDPSetDepthImage
-    constexpr uint32_t last_column = (uint32_t)(-1 * 4) & 0xFFFF; // 319 from the right edge, in quarter pixels
     const uint32_t words[] = {
         0xE7000000u, 0,                                                // gDPPipeSync
         0xE3000A01u, 0x00300000u,                                      // gDPSetCycleType(G_CYC_FILL)
@@ -86,7 +87,7 @@ extern "C" void fzx_race_clear_depth(uint8_t* rdram, gpr* gfx) {
         opcode_set_scissor, (origin_left << 2) | (origin_right << 14), // gEXSetScissor(G_SC_NON_INTERLACE,
         0, 240 * 4,                                                    //   0, 0, 320, 240)
         opcode_fill_rect, origin_left | (origin_right << 12),          // gEXFillRectangle(
-        0, (last_column << 16) | (239 * 4),                            //   0, 0, 319, 239)
+        0, 239 * 4,                                                    //   0, 0, 0 from the right, 239)
         0xE7000000u, 0,                                                // gDPPipeSync
         0xE3000A01u, 0x00000000u,                                      // gDPSetCycleType(G_CYC_1CYCLE), as they end
     };
