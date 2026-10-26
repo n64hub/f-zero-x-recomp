@@ -19,3 +19,104 @@ stubs = [
     # never reports: it writes to its stack at an offset N64Recomp can't analyze.
     "__LeoBootGame2",
 ]
+
+# Widescreen's HUD (src/game/hud_align.cpp): each function that draws a part of a race's HUD starts by saying which
+# edge of the picture its rectangles are placed from (RT64's gEXSetRectAlign, which the Graphics tab's HUD Placement
+# then places), and Menus_Draw says centre again once its HUD is drawn, where its display list is in $s3. Hooks rather
+# than copies of these functions: Hud_DrawHud is 227 lines and Menus_Draw 570. 0 is centre (as the game has it), 1 the
+# left edge, 2 the right.
+
+[[patches.hook]]
+func = "Hud_DrawLapRectangle"
+before_vram = 0x80131A68
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 1); }"
+
+[[patches.hook]]
+func = "Hud_DrawLapCounter"
+before_vram = 0x80131B90
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 1); }"
+
+[[patches.hook]]
+func = "Hud_DrawPlayerLives"
+before_vram = 0x801347AC
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 1); }"
+
+[[patches.hook]]
+func = "Hud_DrawRacePortraits"
+before_vram = 0x80132EEC
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 1); }"
+
+[[patches.hook]]
+func = "Hud_DrawTimeRectangle"
+before_vram = 0x8012FE8C
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_UpdatePlayerHudInfo"
+before_vram = 0x8012FF7C
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_DrawEnergyOutlineRectangle"
+before_vram = 0x8013064C
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_DrawEnergyBar"
+before_vram = 0x80130304
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_DrawKOStars"
+before_vram = 0x801345EC
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_DrawDeathRaceTimer"
+before_vram = 0x80134FFC
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_DrawDeathRaceBest"
+before_vram = 0x801353C0
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_DrawDeathRaceBestTime"
+before_vram = 0x80135598
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Minimap_DrawCourseMinimap"
+before_vram = 0x80135B20
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_DrawPlayerSpeed"
+before_vram = 0x80130824
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 2); }"
+
+[[patches.hook]]
+func = "Hud_UpdateRaceIntervalInfo"
+before_vram = 0x80133D4C
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 0); }"
+
+[[patches.hook]]
+func = "Hud_DrawPracticeBestLap"
+before_vram = 0x80134D0C
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 0); }"
+
+[[patches.hook]]
+func = "Hud_DrawReverse"
+before_vram = 0x801340F4
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 0); }"
+
+[[patches.hook]]
+func = "Hud_DrawPosition"
+before_vram = 0x801312DC
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r4, 0); }"
+
+[[patches.hook]]
+func = "Menus_Draw"
+before_vram = 0x8012D9F8
+text = "{ void fzx_hud_align(uint8_t*, gpr*, int); fzx_hud_align(rdram, &ctx->r19, 0); }"
