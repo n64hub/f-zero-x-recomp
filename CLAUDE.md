@@ -76,7 +76,9 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   48 kHz).
 - **Interpolation.** `patches/interpolation.c` rewrites each frame's finished list (Gfx_FullSync) for RT64: a camera's
   combined projection and view becomes the two, from the camera, since its off-centre frustum defeats RT64's split, and
-  the racers' matrices and boosters get ids by racer. Its header says how. RT64 blends a camera's own transform, not
-  the view (`runtime-patches/rt64-0002`): F-Zero X's cameras are far from the origin and turn fast.
+  the racers' matrices and boosters get ids by racer. Its header says how. RT64 blends a camera's eye on the line
+  between its two places (`RT64_INTERPOLATE_CAMERA_EYE`, on in `CMakeLists.txt` for the desktop build as the page has
+  it): F-Zero X's cameras are far from the origin and turn fast, and blending the view's translation swung the
+  machine in front of the camera in the frames between.
 - **The game's own pacing**: its main thread wakes at every VI (`osViSetEvent` with a count of 1), and a race with
   one player runs at 60 frames a second on a console.

@@ -53,25 +53,22 @@ index 16b4b9c..3ad3d9d 100644
  
          void special1(State *state, DisplayList **dl) {
 diff --git a/src/hle/rt64_game_frame.cpp b/src/hle/rt64_game_frame.cpp
-index 7066b8f..2c2bdd3 100644
+index 5000ab7..5536953 100644
 --- a/src/hle/rt64_game_frame.cpp
 +++ b/src/hle/rt64_game_frame.cpp
-@@ -627,9 +627,12 @@ namespace RT64 {
-                     // FIXME: We assume the same look at is used throughout the entire draw call, so we only check the first vertex.
-                     const uint32_t curVertexIndex = curWorkload.drawData.faceIndices[curCall.meshDesc.faceIndicesStart];
-                     const uint32_t prevVertexIndex = prevWorkload.drawData.faceIndices[prevCall.meshDesc.faceIndicesStart];
--                    const uint32_t curLookAtIndex = curWorkload.drawData.lookAtIndices[curVertexIndex] >> RSP_LOOKAT_INDEX_SHIFT;
--                    const uint32_t prevLookAtIndex = prevWorkload.drawData.lookAtIndices[prevVertexIndex] >> RSP_LOOKAT_INDEX_SHIFT;
--                    lookAtCheckSet.emplace_back(curLookAtIndex, prevLookAtIndex);
+@@ -644,7 +644,11 @@ namespace RT64 {
+                 const uint32_t textureGenMask = G_LIGHTING | G_TEXTURE_GEN;
+                 if ((call.callDesc.geometryMode & textureGenMask) == textureGenMask) {
+                     const uint32_t vertexIndex = workload.drawData.faceIndices[call.meshDesc.faceIndicesStart];
+-                    lookAts.push_back(workload.drawData.lookAtIndices[vertexIndex] >> RSP_LOOKAT_INDEX_SHIFT);
 +                    // A call whose texture gen sets no coordinates (F3DFLX2's alpha light) has no look at.
-+                    const uint32_t curLookAtIndex = curWorkload.drawData.lookAtIndices[curVertexIndex];
-+                    const uint32_t prevLookAtIndex = prevWorkload.drawData.lookAtIndices[prevVertexIndex];
-+                    if ((curLookAtIndex & RSP_LOOKAT_INDEX_ENABLED) && (prevLookAtIndex & RSP_LOOKAT_INDEX_ENABLED)) {
-+                        lookAtCheckSet.emplace_back(curLookAtIndex >> RSP_LOOKAT_INDEX_SHIFT, prevLookAtIndex >> RSP_LOOKAT_INDEX_SHIFT);
++                    const uint32_t lookAtIndex = workload.drawData.lookAtIndices[vertexIndex];
++                    if (lookAtIndex & RSP_LOOKAT_INDEX_ENABLED) {
++                        lookAts.push_back(lookAtIndex >> RSP_LOOKAT_INDEX_SHIFT);
 +                    }
                  }
              }
-         }
+ 
 diff --git a/src/hle/rt64_rsp.cpp b/src/hle/rt64_rsp.cpp
 index a2d33d3..0da1379 100644
 --- a/src/hle/rt64_rsp.cpp
