@@ -71,6 +71,10 @@ endif()
 include(${CMAKE_SOURCE_DIR}/runtime-patches/apply.cmake)
 fzx_apply_patches()
 
+# A camera's eye is blended on the line between its two places, as the page does: F-Zero X's cameras are far from the
+# course's origin and turn fast, and blending the view's translation swung the machine in front of the camera in the
+# frames between (CLAUDE.md, Interpolation).
+set(RT64_INTERPOLATE_CAMERA_EYE ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
 set(BUILD_SHARED_LIBS OFF)
@@ -185,6 +189,7 @@ target_sources(FZeroXRecompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
     ${CMAKE_SOURCE_DIR}/src/main/register_overlays.cpp
     ${CMAKE_SOURCE_DIR}/src/game/config.cpp
+    ${CMAKE_SOURCE_DIR}/src/game/hud_align.cpp
     ${CMAKE_SOURCE_DIR}/src/game/libultra.cpp
     ${CMAKE_SOURCE_DIR}/src/game/recomp_api.cpp
 )

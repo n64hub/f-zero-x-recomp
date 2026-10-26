@@ -22,5 +22,6 @@
 // The game's natives (src/game/recomp_api.cpp).
 void recomp_load_overlays(u32 rom, void* ram, u32 size);
 u32 recomp_rom_read(u32 offset);
+f32 recomp_get_aspect_ratio(f32 original);
 
 #endif
