@@ -189,7 +189,7 @@ target_sources(FZeroXRecompiled PRIVATE
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
     ${CMAKE_SOURCE_DIR}/src/main/register_overlays.cpp
     ${CMAKE_SOURCE_DIR}/src/game/config.cpp
-    ${CMAKE_SOURCE_DIR}/src/game/widescreen.cpp
+    ${CMAKE_SOURCE_DIR}/src/game/hud_align.cpp
     ${CMAKE_SOURCE_DIR}/src/game/libultra.cpp
     ${CMAKE_SOURCE_DIR}/src/game/recomp_api.cpp
 )

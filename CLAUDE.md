@@ -88,13 +88,17 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   4:3 with Aspect Ratio Original). The game draws a black border round a race, a console's too: its scissor keeps the
   3D in from 4:3's edges (12, 16, 308, 224 with one player, 12-307 for the halves of two), and RT64 keeps that as far in
   from the window's. So `widescreen.c`'s `Camera_Draw`, which sets every race view's scissor, opens one or two
-  players' views to the picture's edges (`gEXSetScissor`) in a picture wider than 4:3, and a hook in `Race_Draw`
-  clears the depth over the whole picture after the game's clear of the scissor's size (`fzx_race_clear_depth`). The
-  one-player view's viewport is the whole 320x240 (`aVpFullScreen`, in the MIO0 of `course_track_gfx`); the top
-  half's starts 4 lines down, so its scissor does too. The menus' 12, 8, 308, 232 frame, Records, the GP's ending and
-  three or four players' quarters keep the game's. The race's HUD is placed by N64Recomp hooks (`us.toml`, `[[patches.hook]]`) at the start of each
+  players' views to the picture's edges (`gEXSetScissor`) in a picture wider than 4:3. The game clears the depth
+  only inside its scissor, and a second clear over the whole picture cost a quarter of the presents at 4K and set off
+  a crash in RT64's render to RAM on the web, so there is none. The one-player view's viewport is the whole 320x240
+  (`aVpFullScreen`, in the MIO0 of `course_track_gfx`); the top half's starts 4 lines down, so its scissor does too.
+  The other screens (the menus, Records, the GP's ending) draw in the game's 12, 8, 308, 232 frame, and its patched
+  `func_80069698` enlarges that to the whole picture after each one draws, before the transition, whose background is
+  the frame: the framebuffer loaded as a texture a few rows at a time, which RT64 takes from what it drew. Three or
+  four players' quarters keep the game's border, and each screen's first three frames are cleared to black so the
+  last one's picture isn't left beside them. The race's HUD is placed by N64Recomp hooks (`us.toml`, `[[patches.hook]]`) at the start of each
   function that draws a part of it, which write RT64's `gEXSetRectAlign` into its display list
-  (`src/game/widescreen.cpp`): the portraits, lap and spare machines from the left edge, energy, time, the minimap and
+  (`src/game/hud_align.cpp`): the portraits, lap and spare machines from the left edge, energy, time, the minimap and
   the speed from the right, the rank and messages centred. A hook at `Hud_DrawHud`'s start sets the game's 4:3 HUD
   scissor again from the edges, which would cut those off; the game's next `gDPSetScissor` puts it back. Three or four
   players' views are quarters, so their HUD stays as the game places it. A hook's `before_vram` is the function's

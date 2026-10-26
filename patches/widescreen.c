@@ -107,11 +107,12 @@ RECOMP_PATCH void Background_Update(void) {
 // The decomp's Camera_Draw, with a view of one or two players opened to the picture's edges: the game's scissor keeps
 // a race's 3D in from 4:3's (12, 16, 308, 224 with one player, the halves 12-307 with two), the border a console shows
 // too, and RT64 keeps it as far in from the window's. Every one of a race's views is set here, its sky's and course's
-// (Background_Draw) and its racers' (Race_Draw), and the depth they draw against is cleared over the whole picture
-// first (fzx_race_clear_depth, src/game/widescreen.cpp). The one-player view's viewport is the whole 320x240; the top
-// half's starts 4 lines down, so its scissor does too, and the line between the halves stays. Records and the GP's
-// ending (their screens are the game's 12, 8, 308, 232 frame) and three or four players' quarters stay as the game
-// has them, and so does a 4:3 picture.
+// (Background_Draw) and its racers' (Race_Draw). The one-player view's viewport is the whole 320x240; the top half's
+// starts 4 lines down, so its scissor does too, and the line between the halves stays. The game clears the depth only
+// inside its own scissor, and what the race draws beside it showed nothing wrong at 4K in Chrome; a second clear over
+// the whole picture cost a quarter of the presents there and set off a crash in RT64's render to RAM on the web.
+// Records and the GP's ending (their screens are the game's 12, 8, 308, 232 frame, which func_80069698 below enlarges)
+// and three or four players' quarters stay as the game has them, and so does a 4:3 picture.
 extern s32 gGameMode;
 extern s32 gNumPlayers;
 extern GfxPool D_1000000;
@@ -160,11 +161,12 @@ RECOMP_PATCH Gfx* Camera_Draw(Gfx* gfx, s32 scissorBoxType, s32 cameraIndex) {
     return gfx;
 }
 
-// The decomp's func_80069698 (src/game/game.c), which draws a screen, with the whole picture cleared to black first for
-// the first three frames of each screen in a picture wider than 4:3. A race now draws to the picture's edges, and the
-// game's other screens draw only inside its 12, 8, 308, 232 frame and never clear outside it, so the last race's
-// picture stayed there beside the next menu's. On a console nothing is drawn there and it stays black, and three
-// frames clear each of the game's three framebuffers once.
+// The decomp's func_80069698 (src/game/game.c), which draws a screen, in a picture wider than 4:3 with a screen drawn in
+// the game's 12, 8, 308, 232 frame (the menus, Records, the GP's ending) enlarged to the whole picture, and the whole
+// picture cleared to black first for the first three frames of each screen. Races of one or two players and the menus
+// now draw to the picture's edges, while three or four players' quarters, and the lines above and between two
+// players' halves, never clear there, so the last screen's picture stayed beside them. On a console nothing is drawn
+// there and it stays black, and three frames clear each of the game's three framebuffers once.
 extern s32 gGameModeChangeState;
 extern s16 D_i2_80106DA0;
 extern Gfx* (*sGamemodeDrawFuncs[])(Gfx*);
