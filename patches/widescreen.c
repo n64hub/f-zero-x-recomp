@@ -159,3 +159,50 @@ RECOMP_PATCH Gfx* Camera_Draw(Gfx* gfx, s32 scissorBoxType, s32 cameraIndex) {
 
     return gfx;
 }
+
+// The decomp's func_80069698 (src/game/game.c), which draws a screen, with the whole picture cleared to black first for
+// the first three frames of each screen in a picture wider than 4:3. A race now draws to the picture's edges, and the
+// game's other screens draw only inside its 12, 8, 308, 232 frame and never clear outside it, so the last race's
+// picture stayed there beside the next menu's. On a console nothing is drawn there and it stays black, and three
+// frames clear each of the game's three framebuffers once.
+extern s32 gGameModeChangeState;
+extern s16 D_i2_80106DA0;
+extern Gfx* (*sGamemodeDrawFuncs[])(Gfx*);
+
+// RT64's G_EX_FILLRECT_V1, which rt64_extended_gbi.h has no macro for: a fill rectangle placed from the origins given
+// (its src/gbi/rt64_gbi_extended.cpp, fillrectV1).
+#define gEXFillRectangle(cmd, lorigin, rorigin, ulx, uly, lrx, lry)                                                  \
+    G_EX_COMMAND2(cmd, PARAM(RT64_EXTENDED_OPCODE, 8, 24) | PARAM(G_EX_FILLRECT_V1, 24, 0),                         \
+                  PARAM(lorigin, 12, 0) | PARAM(rorigin, 12, 12), PARAM((ulx) * 4, 16, 16) | PARAM((uly) * 4, 16, 0), \
+                  PARAM((lrx) * 4, 16, 16) | PARAM((lry) * 4, 16, 0))
+
+static s32 sClearedMode = -1;
+static s32 sClearFrames = 0;
+
+RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
+
+    if ((gGameModeChangeState != GAMEMODE_CHANGE_INIT) && D_i2_80106DA0) {
+        // @recomp Clear the picture for the first three frames of a screen.
+        if (GET_MODE(gGameMode) != sClearedMode) {
+            sClearedMode = GET_MODE(gGameMode);
+            sClearFrames = 3;
+        }
+        if ((sClearFrames > 0) && (recomp_get_aspect_ratio(4.0f / 3.0f) > 4.0f / 3.0f)) {
+            sClearFrames--;
+            gEXPushOtherMode(gfx++);
+            gEXPushScissor(gfx++);
+            gDPPipeSync(gfx++);
+            gDPSetCycleType(gfx++, G_CYC_FILL);
+            gDPSetRenderMode(gfx++, G_RM_NOOP, G_RM_NOOP2);
+            gfx = TextureUtils_SetFramebuffer(gfx);
+            gDPSetFillColor(gfx++, GPACK_RGBA5551(0, 0, 0, 1) << 16 | GPACK_RGBA5551(0, 0, 0, 1));
+            gEXSetScissor(gfx++, G_SC_NON_INTERLACE, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, 0, 0, SCREEN_HEIGHT);
+            gEXFillRectangle(gfx++, G_EX_ORIGIN_LEFT, G_EX_ORIGIN_RIGHT, 0, 0, -1, SCREEN_HEIGHT - 1);
+            gDPPipeSync(gfx++);
+            gEXPopScissor(gfx++);
+            gEXPopOtherMode(gfx++);
+        }
+        gfx = sGamemodeDrawFuncs[GET_MODE(gGameMode)](gfx);
+    }
+    return Transition_Draw(gfx);
+}
