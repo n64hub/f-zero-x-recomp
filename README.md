@@ -17,10 +17,11 @@ git or CI is made from one except the symbol names and addresses in `syms/`.
 the menus into a Grand Prix race, with sound (the audio microcode recompiled), SRAM saves and keyboard and gamepad
 input. The game's own graphics microcode, F3DFLX2, is drawn with its alpha light, which gives the machines their paint
 and shading (`runtime-patches/`). Races interpolate to the display's rate (`patches/interpolation.c`): each camera,
-machine, shadow and booster glow is blended between two game frames by who it is. In a window wider than 4:3 the race
-draws to the window's edges, sky included, and its HUD sits at the picture's sides (Graphics: Aspect Ratio Expand and
-HUD Placement 16:9 by default, Original for the console's 4:3). The game also plays in a browser, built from your ROM
-as a web page ([docs/web.md](docs/web.md)).
+machine, shadow and booster glow is blended between two game frames by who it is. In a window wider than 4:3 a race
+of one or two players draws to the window's edges, sky included, without the black border the game draws on a console
+(three or four players' quarters keep it), the menus' framed screens are enlarged to fill it, and a race's HUD sits at
+the picture's sides (Graphics: Aspect Ratio Expand and HUD Placement 16:9 by default, Original for the console's 4:3
+and its border). The game also plays in a browser, built from your ROM as a web page ([docs/web.md](docs/web.md)).
 
 ## The ROM
 

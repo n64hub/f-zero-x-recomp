@@ -13,11 +13,15 @@
 # 0x802C4924), and the pause menu. Not recorded: the X cup's courses, which the game makes up each time from the same
 # venues, Death Race, Time Attack, VS, the results, records and options screens, and the course editor. Flags follow
 # settings (filtering, HDR, MSAA, upscaling), so a change to one of those defaults means recording again.
+# Section 0's last two were added by hand from plays: the menus' frame enlarged to a picture wider than 4:3
+# (patches/widescreen.c), and one the attract demo's two-player race misses.
 00404240 00000c3f fcffffff fffcf279 04cb540b
 00404240 00000c3f fc119623 ff2fffff 04cb540b
 00504240 00003c3f fcffffff fffcf279 04cb540b
 00404240 00000c3f fcffffff fffdf6fb 0800000b
 00404240 00002c3f fc11fe23 fffff3f9 04cb540b
+0f0a4000 00002cff fcffffff fffcf87c 0803540b
+00504240 00000c3f fcffffff fffcf279 04cb540b
 section mute-city
 0f0a4000 00082c3f fcffffff fffdf6fb 08000008
 00504240 00000c0f fcffffff fffdf6fb 0800000b
