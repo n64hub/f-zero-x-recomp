@@ -92,11 +92,11 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   only inside its scissor, and a second clear over the whole picture cost a quarter of the presents at 4K and set off
   a crash in RT64's render to RAM on the web, so there is none. The one-player view's viewport is the whole 320x240
   (`aVpFullScreen`, in the MIO0 of `course_track_gfx`); the top half's starts 4 lines down, so its scissor does too.
-  The other screens (the menus, Records, the GP's ending) draw in the game's 12, 8, 308, 232 frame, and its patched
-  `func_80069698` enlarges that to the whole picture after each one draws, before the transition, whose background is
-  the frame: the framebuffer loaded as a texture a few rows at a time, which RT64 takes from what it drew. Three or
-  four players' quarters keep the game's border, and each screen's first three frames are cleared to black so the
-  last one's picture isn't left beside them. The race's HUD is placed by N64Recomp hooks (`us.toml`, `[[patches.hook]]`) at the start of each
+  The other screens (the title, the menus, Records, the GP's ending) draw in the game's 12, 8, 308, 232 frame, and its
+  patched `func_80069698` enlarges that to the whole picture after each one draws, before the transition, whose
+  background is the frame: the framebuffer loaded as a texture a few rows at a time, which RT64 takes from what it drew.
+  Three or four players' quarters keep the game's border, and each screen's first three frames are cleared to black so
+  the last one's picture isn't left beside them. The race's HUD is placed by N64Recomp hooks (`us.toml`, `[[patches.hook]]`) at the start of each
   function that draws a part of it, which write RT64's `gEXSetRectAlign` into its display list
   (`src/game/hud_align.cpp`): the portraits, lap and spare machines from the left edge, energy, time, the minimap and
   the speed from the right, the rank and messages centred. A hook at `Hud_DrawHud`'s start sets the game's 4:3 HUD
