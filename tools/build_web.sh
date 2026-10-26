@@ -12,6 +12,8 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 CPUS=${1:-$(nproc)}
 shift || true
 git -C "$ROOT" submodule update --init --recursive lib/N64ModernRuntime lib/rt64 lib/RecompFrontend lib/N64Recomp-browser
+# The decomp only for its headers, which patches/ includes.
+git -C "$ROOT" submodule update --init lib/fzerox
 IMAGE=fzx-web:$(sha256sum "$ROOT/tools/docker/Dockerfile.web" | cut -c1-12)
 mkdir -p "$ROOT/build/home" "$ROOT/build/ccache-web"
 docker image inspect "$IMAGE" >/dev/null 2>&1 || docker build -t "$IMAGE" -f "$ROOT/tools/docker/Dockerfile.web" "$ROOT/tools/docker"
