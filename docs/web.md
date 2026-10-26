@@ -57,9 +57,9 @@ says what each section played and what it leaves out.
 
 ## How it plays
 
-The regular plan on a desktop GPU at 1256x645, from the page this branch builds (N64Recomp-browser's `plays.jsonl`,
-game `fzx`): in Chrome, uncapped, 357.8 presents a second, held by the uncapped rate (360), no frame gap over 50 ms,
-no sound short; in Firefox with its default prefs, 239.9, the display's rate, one gap of 114 ms. Neither missed a
-shader or had a WebGPU error or exception. Chrome builds the whole list behind the launcher; Firefox builds each
+The regular plan on a desktop GPU at 1256x645, from the page as the port first built it (N64Recomp-browser's
+`plays.jsonl`, game `fzx`): in Chrome, uncapped, 357.8 presents a second, held by the uncapped rate (360), no frame
+gap over 50 ms, no sound short; in Firefox with its default prefs, 239.9, the display's rate, one gap of 114 ms.
+Neither missed a shader or had a WebGPU error or exception. Chrome builds the whole list behind the launcher; Firefox builds each
 section as it is reached and waits 2.2 s for Mute City's as the race starts. The game itself runs a one-player race at
 60 frames a second, as on a console, and RT64 interpolates the rest.
