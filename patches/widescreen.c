@@ -11,6 +11,7 @@
 #include "patches.h"
 #include "fzx_game.h"
 #include "overlays/ovl_i3/background.h"
+#include "overlays/ovl_i2/transition.h"
 #include "rt64_extended_gbi.h"
 
 extern GfxPool* gGfxPool;
@@ -161,12 +162,19 @@ RECOMP_PATCH Gfx* Camera_Draw(Gfx* gfx, s32 scissorBoxType, s32 cameraIndex) {
     return gfx;
 }
 
-// The decomp's func_80069698 (src/game/game.c), which draws a screen, in a picture wider than 4:3 with a screen drawn
-// in the game's 12, 8, 308, 232 frame (the title, the menus, Records, the GP's ending) enlarged to the whole picture,
-// and the whole picture cleared to black first for the first three frames of each screen. Races of one or two players,
-// the title and the menus now draw to the picture's edges, while three or four players' quarters, and the lines above
-// and between two players' halves, never clear there, so the last screen's picture stayed beside them. On a console
-// nothing is drawn there and it stays black, and three frames clear each of the game's three framebuffers once.
+// The decomp's func_80069698 (src/game/game.c), which draws a screen and the transition over it, in a picture wider than
+// 4:3 with a screen drawn in the game's 12, 8, 308, 232 frame (the title, the menus, Records, the GP's ending) enlarged
+// to the whole picture with its transition, and the whole picture cleared to black first for the first three frames of
+// each screen. Races of one or two players, the title and the menus now draw to the picture's edges, while three or four
+// players' quarters, and the lines above and between two players' halves, never clear there, so the last screen's
+// picture stayed beside them. On a console nothing is drawn there and it stays black, and three frames clear each of
+// the game's three framebuffers once.
+//
+// Every transition (src/overlays/ovl_i2/transition.c) draws in the frame too: black, a fade's colour, or the picture it
+// leaves in pieces (its background, which Transition_SetBackgroundBuffer copies from the framebuffer last shown). On a
+// framed screen it is drawn before the frame is enlarged, so it is enlarged with it and covers the whole picture as it
+// covers the frame on a console, and its background is the frame as it was before it was enlarged (below). A race,
+// which draws to the edges itself, has only fades (Transition_HideSet, Transition_AppearSet), drawn to the edges below.
 extern s32 gGameModeChangeState;
 extern s16 D_i2_80106DA0;
 extern Gfx* (*sGamemodeDrawFuncs[])(Gfx*);
@@ -192,8 +200,16 @@ static s32 sClearFrames = 0;
 
 extern s16 D_800CCFE4;
 extern s32 D_800DCCFC;
+extern s32 D_800DCD00;
 extern s32 D_800DCD04;
-extern FrameBuffer* gFrameBuffers[];
+extern s32 D_800DCD08;
+extern FrameBuffer* gFrameBuffers[3];
+extern Transition sTransition;
+extern u16* sTransitionPalettePtr;
+extern Gfx D_8014888[];
+
+// Whether each of the game's three framebuffers holds an enlarged frame, from the last screen drawn in it.
+static bool sFrameBufferEnlarged[3];
 
 // Whether a screen is drawn in the game's frame: all but the races', which draw to the picture's edges, and a race of
 // three or four players keeps its own. The title is framed too: the attract demo races in the race's modes.
@@ -269,15 +285,96 @@ static Gfx* Widescreen_FillFrame(Gfx* gfx) {
     return gfx;
 }
 
-RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
+// The decomp's Transition_SetBackgroundBuffer (src/overlays/ovl_i2/transition.c), which copies the frame from the
+// framebuffer last shown for a transition to draw in pieces, taking an enlarged frame's pixels from where each was
+// enlarged to: the transition is enlarged again with the frame (func_80069698), so it starts from the picture as it was
+// shown and not from its middle enlarged twice. The framebuffer in RAM holds all of the enlarged frame, since RT64 draws
+// what it copies to RAM at the game's own 4:3. The runtime has no data cache to invalidate first.
+RECOMP_PATCH void Transition_SetBackgroundBuffer(void) {
+    Transition* transition = &sTransition;
+    u16* backgroundBufferPtr;
+    FrameBuffer* frameBuffer;
+    s32 index;
+    s32 row;
+    s32 column;
 
-    if ((gGameModeChangeState != GAMEMODE_CHANGE_INIT) && D_i2_80106DA0) {
+    if (!(transition->flags & TRANSITION_FLAG_SET_BACKGROUND_BUFFER)) {
+        return;
+    }
+
+    transition->flags &= ~TRANSITION_FLAG_SET_BACKGROUND_BUFFER;
+    backgroundBufferPtr = transition->backgroundBuffer;
+    index = (D_800CCFE4 == 3) ? D_800DCD08 : D_800DCD00;
+    frameBuffer = gFrameBuffers[index];
+
+    for (row = 0; row < TRANSITION_BACKGROUND_HEIGHT; row++) {
+        for (column = 0; column < TRANSITION_BACKGROUND_WIDTH; column++, backgroundBufferPtr++) {
+            if (sFrameBufferEnlarged[index]) {
+                *backgroundBufferPtr = frameBuffer->array[((2 * row + 1) * SCREEN_HEIGHT) / (2 * FRAME_HEIGHT)]
+                                                         [((2 * column + 1) * SCREEN_WIDTH) / (2 * FRAME_WIDTH)];
+            } else {
+                *backgroundBufferPtr = frameBuffer->array[row + FRAME_TOP][column + FRAME_LEFT];
+            }
+        }
+    }
+
+    if (transition->flags & TRANSITION_FLAG_GREYSCALE) {
+        TextureUtils_ConvertToGreyscale(transition->backgroundBuffer,
+                                        TRANSITION_BACKGROUND_WIDTH * TRANSITION_BACKGROUND_HEIGHT * sizeof(u16));
+    }
+    if (transition->flags & TRANSITION_FLAG_INVERSE_GREYSCALE) {
+        Graphics_ConvertToInverseGreyscale(transition->backgroundBuffer,
+                                           TRANSITION_BACKGROUND_WIDTH * TRANSITION_BACKGROUND_HEIGHT * sizeof(u16));
+    }
+    if (transition->flags & TRANSITION_FLAG_CONVERT_TO_PALETTE) {
+        TextureUtils_GeneratePalette(transition->backgroundBuffer, sTransitionPalettePtr,
+                                     TRANSITION_BACKGROUND_WIDTH * TRANSITION_BACKGROUND_HEIGHT * sizeof(u16));
+    }
+}
+
+// The decomp's Transition_FadeDraw, with a race's fade, in a picture wider than 4:3, drawn to the picture's edges as the
+// race is: a rectangle as wide as its scissor, the whole 320, which RT64 stretches to the window's width, as
+// Widescreen_FillFrame's. Extended origins would place it from a 16:9 picture's edges (HUD Placement), short of a wider
+// window's. A framed screen's is enlarged with its frame.
+RECOMP_PATCH Gfx* Transition_FadeDraw(Gfx* gfx, Transition* transition) {
+    TransitionInfo* fadeInfo = &transition->transitionInfo;
+
+    gSPDisplayList(gfx++, D_8014888);
+
+    if (transition->activeTransitionType == TRANSITION_TYPE_STATIC_FADE) {
+        gDPSetAlphaCompare(gfx++, G_AC_DITHER);
+    }
+
+    gDPSetPrimColor(gfx++, 0, 0, FADE_RED(fadeInfo), FADE_GREEN(fadeInfo), FADE_BLUE(fadeInfo), FADE_ALPHA(fadeInfo));
+
+    if (!Widescreen_IsFramedScreen(GET_MODE(gGameMode)) && (recomp_get_aspect_ratio(4.0f / 3.0f) > 4.0f / 3.0f)) {
+        gEXPushScissor(gfx++);
+        gDPSetScissor(gfx++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        gDPFillRectangle(gfx++, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        gEXPopScissor(gfx++);
+    } else {
+        gDPFillRectangle(gfx++, TRANSITION_BORDER_WIDTH, TRANSITION_BORDER_HEIGHT,
+                         SCREEN_WIDTH - TRANSITION_BORDER_WIDTH, SCREEN_HEIGHT - TRANSITION_BORDER_HEIGHT);
+    }
+
+    return gfx;
+}
+
+RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
+    bool wide = recomp_get_aspect_ratio(4.0f / 3.0f) > 4.0f / 3.0f;
+    bool drawn = (gGameModeChangeState != GAMEMODE_CHANGE_INIT) && D_i2_80106DA0;
+    bool transition = sTransition.flags & TRANSITION_FLAG_DRAW;
+    // @recomp Whether the frame drawn in this framebuffer, the screen's or only a transition's, is enlarged.
+    bool enlarged = wide && Widescreen_IsFramedScreen(GET_MODE(gGameMode));
+    s32 index = (D_800CCFE4 == 2) ? D_800DCCFC : D_800DCD04;
+
+    if (drawn) {
         // @recomp Clear the picture for the first three frames of a screen.
         if (GET_MODE(gGameMode) != sClearedMode) {
             sClearedMode = GET_MODE(gGameMode);
             sClearFrames = 3;
         }
-        if ((sClearFrames > 0) && (recomp_get_aspect_ratio(4.0f / 3.0f) > 4.0f / 3.0f)) {
+        if ((sClearFrames > 0) && wide) {
             sClearFrames--;
             gEXPushOtherMode(gfx++);
             gEXPushScissor(gfx++);
@@ -293,10 +390,14 @@ RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
             gEXPopOtherMode(gfx++);
         }
         gfx = sGamemodeDrawFuncs[GET_MODE(gGameMode)](gfx);
-        // @recomp A menu's frame enlarged to the picture, before the transition, whose background is the frame's.
-        if (Widescreen_IsFramedScreen(GET_MODE(gGameMode)) && (recomp_get_aspect_ratio(4.0f / 3.0f) > 4.0f / 3.0f)) {
+    }
+    gfx = Transition_Draw(gfx);
+    // @recomp A framed screen's frame enlarged to the picture, with the transition drawn over it.
+    if (drawn || transition) {
+        if (enlarged) {
             gfx = Widescreen_FillFrame(gfx);
         }
+        sFrameBufferEnlarged[index] = enlarged;
     }
-    return Transition_Draw(gfx);
+    return gfx;
 }
