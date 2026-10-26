@@ -1,0 +1,177 @@
+{
+ "header": [
+  "The page's plan for N64Recomp-browser's tools/play_page.mjs, its regular play of 2-3 minutes: the launcher, Load ROM",
+  "on a new profile once the shader list Chrome builds behind the launcher is done (Firefox builds none there, and its",
+  "line saying so is the one waited for), Start Game, 15 s of the logos and the title, then Start (Enter) to the main",
+  "menu and GP Race with A (Space), through machine select and the machine's settings, as a player does. The course is",
+  "set at machine select, where the race reads it (gCourseIndex, 0x800F8514), and once the race starts the computer",
+  "drives player 1's machine (RACER_STATE_CPU_CONTROLLED in gRacers[0]'s flags, 0x802C4924), so every play goes as far",
+  "whatever the browser, nudged left and right by the stick (A, D). Its waits and holds are on the game's own frame",
+  "counter, gGameFrameCount (0x800CCFE0, 60 a second), each behind a need that fails the run unless the game is in a",
+  "race (gGameMode, 0x800DCE44) on that course.",
+  "Mute City, a minute of the game's time from the start. tools/play_plan_extended.json",
+  "quits from the pause menu and goes on to Rainbow Road, for when a longer play is needed."
+ ],
+ "page": "FZeroXRecompiled.html",
+ "load": [
+  [
+   "until",
+   "RT64: all [0-9]+ prebuilt shaders built|once the game draws",
+   45000
+  ],
+  [
+   "wait",
+   5000
+  ]
+ ],
+ "setup": [
+  [
+   "rom",
+   627,
+   364
+  ],
+  [
+   "wait",
+   3000
+  ]
+ ],
+ "start": [
+  [
+   "click",
+   627,
+   364
+  ],
+  [
+   "wait",
+   15000
+  ],
+  [
+   "shot",
+   "title.png"
+  ],
+  [
+   "pressUntil",
+   "Enter",
+   "Enter",
+   13,
+   150,
+   1500,
+   "(n64r(0x800DCE44) & 0xFF) == 7",
+   60000
+  ],
+  [
+   "wait",
+   2000
+  ],
+  [
+   "shot",
+   "main_menu.png"
+  ]
+ ],
+ "play": [
+  [
+   "pressUntil",
+   "Space",
+   " ",
+   32,
+   150,
+   1500,
+   "(n64r(0x800DCE44) & 0xFF) == 8",
+   30000
+  ],
+  [
+   "wait",
+   1500
+  ],
+  [
+   "shot",
+   "machine_select.png"
+  ],
+  [
+   "need",
+   "n64w(0x800F8514, 0); n64r(0x800F8514) === 0"
+  ],
+  [
+   "pressUntil",
+   "Space",
+   " ",
+   32,
+   150,
+   1500,
+   "(n64r(0x800DCE44) & 0xFF) == 9",
+   30000
+  ],
+  [
+   "wait",
+   1500
+  ],
+  [
+   "shot",
+   "machine_settings.png"
+  ],
+  [
+   "pressUntil",
+   "Space",
+   " ",
+   32,
+   150,
+   1500,
+   "(n64r(0x800DCE44) & 0xFF) == 1",
+   30000
+  ],
+  [
+   "clock",
+   "n64r(0x800CCFE0)",
+   60
+  ],
+  [
+   "wait",
+   500
+  ],
+  [
+   "need",
+   "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+  ],
+  [
+   "wait",
+   10000
+  ],
+  [
+   "shot",
+   "mute_city_start.png"
+  ],
+  [
+   "hold",
+   "KeyA",
+   "a",
+   65,
+   1000
+  ],
+  [
+   "wait",
+   20000
+  ],
+  [
+   "hold",
+   "KeyD",
+   "d",
+   68,
+   1000
+  ],
+  [
+   "wait",
+   28000
+  ],
+  [
+   "shot",
+   "mute_city.png"
+  ],
+  [
+   "clock"
+  ],
+  [
+   "need",
+   "(n64r(0x800DCE44) & 0xFF) === 1 && n64r(0x800F8514) === 0"
+  ]
+ ]
+}

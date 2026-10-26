@@ -1,0 +1,2205 @@
+{
+ "page": "FZeroXRecompiled.html",
+ "header": [
+  "The RT64 shaders the web page builds: one shader description a line, other mode L and H, color combiner L and H,",
+  "flags, in hex. RT64 specializes each one's WGSL when the page is built and builds them with the game waiting: those",
+  "above the first \"section\" line before the game starts, and a course's section when the course first draws with its",
+  "shaders, so that nothing draws with the ubershader, which integrated graphics can't afford (N64Recomp-browser's",
+  "docs/porting.md, Prebuilt shader lists).",
+  "",
+  "Recorded by code, not by playing: bash tools/record_shaders.sh (its header says how) runs N64Recomp-browser's",
+  "tools/record_shaders.mjs with tools/shader_plan.json, which loads the page fresh for each section. Section 0 is the",
+  "launcher, the boot (the logos and the title) and the main menu, reached with Start as a player does. Then a section a",
+  "course, the 24 of the Jack, Queen, King and Joker cups: GP Race from the main menu with A, through machine select and",
+  "the machine's settings, the course set at machine select where the race reads it (gCourseIndex, 0x800F8514), then 40 s",
+  "of the game's time with the computer driving player 1's machine (RACER_STATE_CPU_CONTROLLED in gRacers[0]'s flags,",
+  "0x802C4924), and the pause menu. Not recorded: the X cup's courses, which the game makes up each time from the same",
+  "venues, Death Race, Time Attack, VS, the results, records and options screens, and the course editor. Flags follow",
+  "settings (filtering, HDR, MSAA, upscaling), so a change to one of those defaults means recording again."
+ ],
+ "load": [
+  [
+   "until",
+   "Device Name|once the game draws",
+   45000
+  ],
+  [
+   "wait",
+   3000
+  ]
+ ],
+ "setup": [
+  [
+   "rom",
+   627,
+   364
+  ],
+  [
+   "wait",
+   3000
+  ]
+ ],
+ "start": [
+  [
+   "click",
+   627,
+   364
+  ],
+  [
+   "wait",
+   3000
+  ],
+  [
+   "pressUntil",
+   "Enter",
+   "Enter",
+   13,
+   150,
+   1500,
+   "(n64r(0x800DCE44) & 0xFF) == 7",
+   60000
+  ],
+  [
+   "wait",
+   2000
+  ]
+ ],
+ "sections": [
+  {
+   "name": "mute-city",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 0); n64r(0x800F8514) === 0"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "silence",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 1); n64r(0x800F8514) === 1"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "sand-ocean",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 2); n64r(0x800F8514) === 2"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "devils-forest",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 3); n64r(0x800F8514) === 3"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "big-blue",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 4); n64r(0x800F8514) === 4"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "port-town",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 5); n64r(0x800F8514) === 5"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "sector-alpha",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 6); n64r(0x800F8514) === 6"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "red-canyon",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 7); n64r(0x800F8514) === 7"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "devils-forest-2",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 8); n64r(0x800F8514) === 8"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "mute-city-2",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 9); n64r(0x800F8514) === 9"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "big-blue-2",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 10); n64r(0x800F8514) === 10"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "white-land",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 11); n64r(0x800F8514) === 11"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "fire-field",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 12); n64r(0x800F8514) === 12"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "silence-2",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 13); n64r(0x800F8514) === 13"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "sector-beta",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 14); n64r(0x800F8514) === 14"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "red-canyon-2",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 15); n64r(0x800F8514) === 15"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "white-land-2",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 16); n64r(0x800F8514) === 16"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "mute-city-3",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 17); n64r(0x800F8514) === 17"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "rainbow-road",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 18); n64r(0x800F8514) === 18"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "devils-forest-3",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 19); n64r(0x800F8514) === 19"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "space-plant",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 20); n64r(0x800F8514) === 20"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "sand-ocean-2",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 21); n64r(0x800F8514) === 21"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "port-town-2",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 22); n64r(0x800F8514) === 22"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  },
+  {
+   "name": "big-hand",
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "need",
+     "n64w(0x800F8514, 23); n64r(0x800F8514) === 23"
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     1500
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 1",
+     30000
+    ],
+    [
+     "clock",
+     "n64r(0x800CCFE0)",
+     60
+    ],
+    [
+     "wait",
+     500
+    ],
+    [
+     "need",
+     "n64w(0x802C4924, n64r(0x802C4924) | 0x800000); (n64r(0x802C4924) & 0x800000) !== 0"
+    ],
+    [
+     "wait",
+     40000
+    ],
+    [
+     "clock"
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ],
+    [
+     "hold",
+     "Enter",
+     "Enter",
+     13,
+     150
+    ],
+    [
+     "wait",
+     2000
+    ]
+   ]
+  }
+ ]
+}
