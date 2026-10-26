@@ -495,6 +495,15 @@ int main(int argc, char** argv) {
 
     ultramodern::renderer::callbacks_t renderer_callbacks{
         .create_render_context = [](uint8_t* rdram, ultramodern::renderer::WindowHandle window_handle, bool developer_mode) {
+            // On the page each list's copy to RAM lands a list late: the game's CPU reads a frame it drew only for a
+            // screen transition's background (Transition_SetBackgroundBuffer copies the frame it is about to show, right
+            // after its list is done), and the buffer then still holds its frame from a list or two before, the same
+            // picture on the screen being left. Without render to RAM those tiles would be black, and with the exact copy
+            // every list waits for the GPU's readback. It writes to a framebuffer only to clear them at boot, before its first
+            // list (sys_main.c: the console reports that once), and in the 64DD's code. The desktop build keeps RT64's default.
+#ifdef __EMSCRIPTEN__
+            recompui::renderer::set_render_to_ram_late(true);
+#endif
             return recompui::renderer::create_render_context(rdram, window_handle, ultramodern::renderer::PresentationMode::PresentEarly, developer_mode);
         },
     };
