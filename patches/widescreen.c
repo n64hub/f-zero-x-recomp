@@ -180,6 +180,94 @@ extern Gfx* (*sGamemodeDrawFuncs[])(Gfx*);
 static s32 sClearedMode = -1;
 static s32 sClearFrames = 0;
 
+// The menus' frame, the game's 12, 8, 308, 232, which the transitions' background is too (transition.h).
+#define FRAME_LEFT 12
+#define FRAME_TOP 8
+#define FRAME_WIDTH (SCREEN_WIDTH - FRAME_LEFT * 2)
+#define FRAME_HEIGHT (SCREEN_HEIGHT - FRAME_TOP * 2)
+// Rows a load: 6 of the frame's 296 16-bit pixels fill most of TMEM's 4 KB.
+#define FRAME_STRIP_ROWS 6
+
+extern s16 D_800CCFE4;
+extern s32 D_800DCCFC;
+extern s32 D_800DCD04;
+extern FrameBuffer* gFrameBuffers[];
+
+// Whether a screen is drawn in the game's frame: all but the title's and the races', which draw to the picture's edges
+// (the title's is the attract demo's race), and a race of three or four players keeps its own.
+static bool Widescreen_IsFramedScreen(s32 mode) {
+    switch (mode) {
+        case GAMEMODE_TITLE:
+        case GAMEMODE_GP_RACE:
+        case GAMEMODE_PRACTICE:
+        case GAMEMODE_VS_2P:
+        case GAMEMODE_VS_3P:
+        case GAMEMODE_VS_4P:
+        case GAMEMODE_TIME_ATTACK:
+        case GAMEMODE_DEATH_RACE:
+            return false;
+        default:
+            return true;
+    }
+}
+
+// The rows from row on, rows of them, of the frame drawn to where they are once the frame fills the picture: loaded
+// from the framebuffer as a texture, which RT64 takes from what it drew there, at its resolution, as the load comes.
+static Gfx* Widescreen_DrawFrameStrip(Gfx* gfx, void* framebuffer, s32 row, s32 rows) {
+    s32 top = ((row - FRAME_TOP) * SCREEN_HEIGHT * 4) / FRAME_HEIGHT;
+    s32 bottom = ((row + rows - FRAME_TOP) * SCREEN_HEIGHT * 4) / FRAME_HEIGHT;
+
+    gDPLoadTextureTile(gfx++, framebuffer, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_LEFT, row,
+                       FRAME_LEFT + FRAME_WIDTH - 1, row + rows - 1, 0, G_TX_NOMIRROR | G_TX_CLAMP,
+                       G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+    // The texture's t where the rectangle's top lands, in 10.5 from its quarter pixels.
+    gSPTextureRectangle(gfx++, 0, top, SCREEN_WIDTH << 2, bottom, G_TX_RENDERTILE, FRAME_LEFT << 5,
+                        (FRAME_TOP << 5) + ((top * FRAME_HEIGHT) << 3) / SCREEN_HEIGHT,
+                        (FRAME_WIDTH << 10) / SCREEN_WIDTH, (FRAME_HEIGHT << 10) / SCREEN_HEIGHT);
+    return gfx;
+}
+
+// The frame a screen drew enlarged to the whole picture, in place: 320/296 as wide, which RT64 stretches to the window's
+// width with the rest of the screen since it covers the scissor's, and 240/224 as high. The frame's top half is drawn
+// from the top down and its bottom half from the bottom up, so each strip's rows are loaded before a strip is drawn
+// over them.
+static Gfx* Widescreen_FillFrame(Gfx* gfx) {
+    void* framebuffer = (void*) OS_PHYSICAL_TO_K0(gFrameBuffers[(D_800CCFE4 == 2) ? D_800DCCFC : D_800DCD04]);
+    s32 middle = FRAME_TOP + FRAME_HEIGHT / 2;
+    s32 row;
+    s32 rows;
+
+    gEXPushOtherMode(gfx++);
+    gEXPushCombineMode(gfx++);
+    gEXPushScissor(gfx++);
+    gfx = TextureUtils_SetFramebuffer(gfx);
+    gDPSetCycleType(gfx++, G_CYC_1CYCLE);
+    gDPSetRenderMode(gfx++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
+    gDPSetCombineMode(gfx++, G_CC_DECALRGB, G_CC_DECALRGB);
+    gDPSetTexturePersp(gfx++, G_TP_NONE);
+    gDPSetTextureLUT(gfx++, G_TT_NONE);
+    gDPSetTextureLOD(gfx++, G_TL_TILE);
+    gDPSetTextureDetail(gfx++, G_TD_CLAMP);
+    gDPSetTextureFilter(gfx++, G_TF_BILERP);
+    gDPSetTextureConvert(gfx++, G_TC_FILT);
+    gDPSetAlphaCompare(gfx++, G_AC_NONE);
+    gDPSetColorDither(gfx++, G_CD_DISABLE);
+    gDPSetScissor(gfx++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    for (row = FRAME_TOP; row < middle; row += rows) {
+        rows = MIN(FRAME_STRIP_ROWS, middle - row);
+        gfx = Widescreen_DrawFrameStrip(gfx, framebuffer, row, rows);
+    }
+    for (row = FRAME_TOP + FRAME_HEIGHT; row > middle; row -= rows) {
+        rows = MIN(FRAME_STRIP_ROWS, row - middle);
+        gfx = Widescreen_DrawFrameStrip(gfx, framebuffer, row - rows, rows);
+    }
+    gDPPipeSync(gfx++);
+    gEXPopScissor(gfx++);
+    gEXPopCombineMode(gfx++);
+    gEXPopOtherMode(gfx++);
+    return gfx;
+}
+
 RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
 
     if ((gGameModeChangeState != GAMEMODE_CHANGE_INIT) && D_i2_80106DA0) {
@@ -204,6 +292,10 @@ RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
             gEXPopOtherMode(gfx++);
         }
         gfx = sGamemodeDrawFuncs[GET_MODE(gGameMode)](gfx);
+        // @recomp A menu's frame enlarged to the picture, before the transition, whose background is the frame's.
+        if (Widescreen_IsFramedScreen(GET_MODE(gGameMode)) && (recomp_get_aspect_ratio(4.0f / 3.0f) > 4.0f / 3.0f)) {
+            gfx = Widescreen_FillFrame(gfx);
+        }
     }
     return Transition_Draw(gfx);
 }
