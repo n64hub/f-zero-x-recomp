@@ -22,9 +22,15 @@ stubs = [
 
 # Widescreen's HUD (src/game/hud_align.cpp): each function that draws a part of a race's HUD starts by saying which
 # edge of the picture its rectangles are placed from (RT64's gEXSetRectAlign, which the Graphics tab's HUD Placement
-# then places), and Menus_Draw says centre again once its HUD is drawn, where its display list is in $s3. Hooks rather
-# than copies of these functions: Hud_DrawHud is 227 lines and Menus_Draw 570. 0 is centre (as the game has it), 1 the
-# left edge, 2 the right.
+# then places), and Menus_Draw says centre again once its HUD is drawn, where its display list is in $s3. Hud_DrawHud
+# first sets again the scissor Menus_Draw set just before it, its sides from the picture's edges, or the game's would
+# cut off what is placed past 4:3's. Hooks rather than copies of these functions: Hud_DrawHud is 227 lines and
+# Menus_Draw 570. 0 is centre (as the game has it), 1 the left edge, 2 the right.
+
+[[patches.hook]]
+func = "Hud_DrawHud"
+before_vram = 0x80131DF4
+text = "{ void fzx_hud_scissor(uint8_t*, gpr*); fzx_hud_scissor(rdram, &ctx->r4); }"
 
 [[patches.hook]]
 func = "Hud_DrawLapRectangle"
