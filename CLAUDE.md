@@ -22,6 +22,8 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   The web support every recomp's page shares is developed and documented there; `tools/build_n64recomp.sh` and
   `CMakeLists.txt` apply its `patches/` to the other three, and `CMakeLists.txt` then this game's own changes to them
   (`runtime-patches/`, its README lists them).
+- `docs/web.md`: the web page: `tools/build_web.sh`, its prebuilt shader list (`src/rt64_shaders.txt`,
+  `tools/shader_plan.json`, `tools/record_shaders.sh`) and its play plans (`tools/play_plan*.json`).
 - Comments beside the code, for how and why: each file's header. Read the header of the file you change and update
   it in the same commit.
 
@@ -80,5 +82,15 @@ This repo is the game: its recompilation, the patches over it, the desktop build
   between its two places (`RT64_INTERPOLATE_CAMERA_EYE`, on in `CMakeLists.txt` for the desktop build as the page has
   it): F-Zero X's cameras are far from the origin and turn fast, and blending the view's translation swung the
   machine in front of the camera in the frames between.
+- **Widescreen.** RecompFrontend's Graphics tab defaults to Aspect Ratio Expand, HUD Placement 16:9, Resolution Auto
+  and Framerate Display. RT64 widens the 3D; the rest is the game's to say. `patches/widescreen.c` widens the race's
+  sky, floor and clouds, which the game sizes to a 4:3 view, by the window's aspect ratio (`recomp_get_aspect_ratio`,
+  4:3 with Aspect Ratio Original). The race's HUD is placed by N64Recomp hooks (`us.toml`, `[[patches.hook]]`) at the start of each
+  function that draws a part of it, which write RT64's `gEXSetRectAlign` into its display list
+  (`src/game/hud_align.cpp`): the portraits, lap and spare machines from the left edge, energy, time, the minimap and
+  the speed from the right, the rank and messages centred. A hook at `Hud_DrawHud`'s start sets the game's 4:3 HUD
+  scissor again from the edges, which would cut those off; the game's next `gDPSetScissor` puts it back. Three or four
+  players' views are quarters, so their HUD stays as the game places it. A hook's `before_vram` is the function's
+  first instruction, or one inside it whose registers it names (`Menus_Draw`'s list is in `$s3`).
 - **The game's own pacing**: its main thread wakes at every VI (`osViSetEvent` with a count of 1), and a race with
   one player runs at 60 frames a second on a console.
