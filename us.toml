@@ -20,7 +20,14 @@ stubs = [
     "__LeoBootGame2",
 ]
 
-# Widescreen's HUD (src/game/hud_align.cpp): each function that draws a part of a race's HUD starts by saying which
+# The race's depth cleared to the picture's edges (src/game/widescreen.cpp), where Race_Draw's lists of one player and
+# more join, just past the game's own clear, with the display list pointer in $a0.
+[[patches.hook]]
+func = "Race_Draw"
+before_vram = 0x80103DC0
+text = "{ void fzx_race_clear_depth(uint8_t*, gpr*); fzx_race_clear_depth(rdram, &ctx->r4); }"
+
+# Widescreen's HUD (src/game/widescreen.cpp): each function that draws a part of a race's HUD starts by saying which
 # edge of the picture its rectangles are placed from (RT64's gEXSetRectAlign, which the Graphics tab's HUD Placement
 # then places), and Menus_Draw says centre again once its HUD is drawn, where its display list is in $s3. Hud_DrawHud
 # first sets again the scissor Menus_Draw set just before it, its sides from the picture's edges, or the game's would

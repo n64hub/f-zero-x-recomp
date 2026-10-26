@@ -1,5 +1,6 @@
-// Widescreen's HUD: where a race's HUD is placed in a picture wider than 4:3. us.toml's hooks call fzx_hud_align at
-// the start of each function that draws a part of it, with that function's display list pointer, and it writes
+// Widescreen's natives, called by us.toml's hooks: where a race's HUD is placed in a picture wider than 4:3, and its
+// depth cleared to the picture's edges. The hooks call fzx_hud_align at the start of each function that draws a part
+// of the HUD, with that function's display list pointer, and it writes
 // RT64's gEXSetRectAlign there (rt64_extended_gbi.h), so the rectangles after it are placed from the picture's left or
 // right edge, or as the game has them. RT64 places those from the edges of the HUD Placement the Graphics tab sets
 // (Original keeps 4:3's), and with Aspect Ratio Original none of it moves anything.
@@ -10,11 +11,17 @@
 //
 // With three or four players each view is a quarter of the screen, whose sides aren't the picture's, so there every
 // part is placed as the game has it.
+//
+// patches/widescreen.c's Camera_Draw opens a race's views of one or two players to the picture's edges, so the depth
+// they draw against is cleared there too: fzx_race_clear_depth, a hook in Race_Draw just after the game's own depth
+// clear (12, 16, 308, 224 with one player, 12, 8, 308, 232 with more), clears it again over the whole picture. It does
+// so whatever the picture and the players, since the game's scissor keeps what it draws off the rest.
 
 #include "recomp.h"
 
 namespace {
     constexpr uint32_t opcode_set_scissor = (0x64u << 24) | 0x000005u;    // RT64_EXTENDED_OPCODE, G_EX_SETSCISSOR_V1
+    constexpr uint32_t opcode_fill_rect = (0x64u << 24) | 0x000003u;      // RT64_EXTENDED_OPCODE, G_EX_FILLRECT_V1
     constexpr uint32_t opcode_set_rect_align = (0x64u << 24) | 0x000006u; // RT64_EXTENDED_OPCODE, G_EX_SETRECTALIGN_V1
     constexpr uint32_t origin_left = 0x0;                                 // G_EX_ORIGIN_LEFT
     constexpr uint32_t origin_right = 0x400;                              // G_EX_ORIGIN_RIGHT
@@ -64,4 +71,27 @@ extern "C" void fzx_hud_align(uint8_t* rdram, gpr* gfx, int side) {
     MEM_W(8, *gfx) = (int32_t)offsets;
     MEM_W(12, *gfx) = (int32_t)offsets;
     *gfx = (gpr)(int32_t)((uint32_t)*gfx + 16);
+}
+
+// *gfx is Race_Draw's display list pointer, just past the game's depth clear (D_303A8F8 or D_303A810), moved past the
+// commands. They are that list's, with the scissor and the rectangle from the picture's edges.
+extern "C" void fzx_race_clear_depth(uint8_t* rdram, gpr* gfx) {
+    constexpr uint32_t depth_image = 0x003DBC00;                 // The lists' gsDPSetDepthImage
+    constexpr uint32_t last_column = (uint32_t)(-1 * 4) & 0xFFFF; // 319 from the right edge, in quarter pixels
+    const uint32_t words[] = {
+        0xE7000000u, 0,                                                // gDPPipeSync
+        0xE3000A01u, 0x00300000u,                                      // gDPSetCycleType(G_CYC_FILL)
+        0xFF10013Fu, depth_image,                                      // gDPSetColorImage(RGBA, 16b, 320, depth)
+        0xF7000000u, 0xFFFCFFFCu,                                      // gDPSetFillColor, the lists' depth
+        opcode_set_scissor, (origin_left << 2) | (origin_right << 14), // gEXSetScissor(G_SC_NON_INTERLACE,
+        0, 240 * 4,                                                    //   0, 0, 320, 240)
+        opcode_fill_rect, origin_left | (origin_right << 12),          // gEXFillRectangle(
+        0, (last_column << 16) | (239 * 4),                            //   0, 0, 319, 239)
+        0xE7000000u, 0,                                                // gDPPipeSync
+        0xE3000A01u, 0x00000000u,                                      // gDPSetCycleType(G_CYC_1CYCLE), as they end
+    };
+    for (size_t i = 0; i < sizeof(words) / sizeof(words[0]); i++) {
+        MEM_W(i * 4, *gfx) = (int32_t)words[i];
+    }
+    *gfx = (gpr)(int32_t)((uint32_t)*gfx + sizeof(words));
 }
