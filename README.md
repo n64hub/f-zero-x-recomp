@@ -24,11 +24,12 @@ transitions between screens cover all of it, and a race's HUD sits at the pictur
 Expand and HUD Placement 16:9 by default, Original for the console's 4:3 and its border). The game also plays in a browser, built from your ROM as a web page
 ([docs/web.md](docs/web.md)).
 
-Up to four people race each other in VS Battle, each with a pad of their own or the keyboard: open the menu (Esc),
-and on Controls press Assign players, then a button on each player's pad (or a key) in the players' order, and
-Confirm. Until then every pad and the keyboard play as one, as for a player alone; after, the keyboard stays player
-1's unless a player was given it. The game counts its controllers as it starts, so VS Battle offers as many players
-as were plugged in then: on a page and on the desktop that is four until players are assigned.
+Up to four people race each other in VS Battle, each with a pad of their own or the keyboard: each pad plays a player of
+its own with no setup, in the order the pads were plugged in, and the keyboard plays player 1 beside the first pad. To
+choose who plays which, open the menu (Esc), and on Controls press Assign players, then a button on each player's pad
+(or a key) in the players' order, and Confirm; after, the keyboard stays player 1's unless a player was given it. The
+game counts its controllers as it starts, as on a console, so VS Battle offers as many players as there were pads then
+(or players assigned): plug them in before Start Game.
 
 ## The ROM
 
