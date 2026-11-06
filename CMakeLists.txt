@@ -90,7 +90,7 @@ fzx_apply_patches()
 
 # A camera's eye is blended on the line between its two places, as the page does: F-Zero X's cameras are far from the
 # course's origin and turn fast, and blending the view's translation swung the machine in front of the camera in the
-# frames between (CLAUDE.md, Interpolation).
+# frames between (docs/architecture.md, Interpolation).
 set(RT64_INTERPOLATE_CAMERA_EYE ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/rt64 ${CMAKE_BINARY_DIR}/rt64)
 
