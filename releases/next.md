@@ -1,1 +1,0 @@
-- A gamepad rumbles as its player's machine takes damage, spins out or crashes: each controller now has a Rumble Pak in it, as on a console, where before the game found none and never rumbled.
