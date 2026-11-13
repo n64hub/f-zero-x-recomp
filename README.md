@@ -21,8 +21,10 @@ machine, shadow and booster glow is blended between two game frames by who it is
 of one or two players draws to the window's edges, sky included, without the black border the game draws on a console
 (three or four players' quarters keep it), the title's and the menus' framed screens are enlarged to fill it, the
 transitions between screens cover all of it, and a race's HUD sits at the picture's sides (Graphics: Aspect Ratio
-Expand and HUD Placement 16:9 by default, Original for the console's 4:3 and its border). The game also plays in a browser, built from your ROM as a web page
-([docs/web.md](docs/web.md)).
+Expand and HUD Placement 16:9 by default, Original for the console's 4:3 and its border).
+
+The game also plays in a browser, with your ROM picked by Load ROM as on the desktop:
+[n64hub.com/f-zero-x](https://n64hub.com/f-zero-x/) (`docs/web.md`).
 
 Up to four people race each other in VS Battle, each with a pad of their own or the keyboard: each pad plays a player of
 its own with no setup, in the order the pads were plugged in, and the keyboard plays player 1 beside the first pad. To
