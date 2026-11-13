@@ -12,6 +12,11 @@
 //   cpuDrive(n)                     the computer drives racers 0 to n-1, the players' machines
 //                                   (RACER_STATE_CPU_CONTROLLED in gRacers[i].stateFlags, 0x802C4924 + i * 0x3A8), so
 //                                   a race goes on with nobody steering, and its machines meet the walls and each other
+//   crash(n)                        starts ports 0 to n-1's Rumble Paks as the game does when a player's machine crashes
+//                                   or explodes: its rumble timer (Controller's unk_88, gControllers at 0x800DCE98, 0x94
+//                                   each) set to 10000, which the game's own Controller_UpdateInputs turns into
+//                                   osMotorStart for ten frames. Only a port whose Rumble Pak the game found (unk_74) does
+//                                   anything with it, so a pak the page doesn't report rumbles nothing
 (() => {
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   window.mode = () => n64r(0x800DCE44) & 0x1F;
@@ -40,6 +45,15 @@
       await sleep(1350);
     }
     return test();
+  };
+  window.crash = (n) => {
+    for (let i = 0; i < n; i++) {
+      const c = 0x800DCE98 + i * 0x94;
+      n64w(c + 0x8C, 0);
+      n64w(c + 0x90, 0);
+      n64w(c + 0x88, 10000);
+    }
+    return true;
   };
   window.cpuDrive = (n) => {
     for (let i = 0; i < n; i++) {
