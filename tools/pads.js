@@ -7,6 +7,8 @@
 //                                   left and right) on stand-in pad <pad> for ms (150), as a thumb does
 //   padUntil(pad, button, test, ms) presses it every 1.5 s until test() is true, for at most ms: a menu that ignores a
 //                                   press while it animates, passed without timing the presses
+//   allUntil(button, test, ms)     the same on every pad plugged in at once, each player picking in turn on a screen
+//                                   that waits for all of them (VS's machine select, its settings and course select)
 //   cpuDrive(n)                     the computer drives racers 0 to n-1, the players' machines
 //                                   (RACER_STATE_CPU_CONTROLLED in gRacers[i].stateFlags, 0x802C4924 + i * 0x3A8), so
 //                                   a race goes on with nobody steering, and its machines meet the walls and each other
@@ -23,6 +25,18 @@
     while (performance.now() < end) {
       if (test()) return true;
       await padPress(pad, button);
+      await sleep(1350);
+    }
+    return test();
+  };
+  window.allUntil = async (button, test, ms) => {
+    const end = performance.now() + ms;
+    const pads = navigator.getGamepads().filter(Boolean).length;
+    while (performance.now() < end) {
+      if (test()) return true;
+      for (let i = 0; i < pads; i++) padSet(i, { buttons: { [button]: 1 } });
+      await sleep(150);
+      for (let i = 0; i < pads; i++) padSet(i);
       await sleep(1350);
     }
     return test();
