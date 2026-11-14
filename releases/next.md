@@ -1,1 +1,0 @@
-- In a window wider than 4:3, a two-player race's sky reaches the window's sides: a thin strip of an old picture no longer shows at the left or right edge.
