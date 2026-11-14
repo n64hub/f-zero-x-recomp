@@ -6,7 +6,11 @@
 // as wide as the view at its depth and a fifth more, about 5% past a 4:3 picture's edges. At 16:9 it ended there, and
 // what lay beside it was whatever the colour buffer held, since the game clears only its depth. So the sky's width, and
 // with it the venue's floor and clouds, which use the same range, is the game's times the window's aspect ratio over
-// 4:3; their height stays the game's, since the sky's gradient runs from its top to its bottom.
+// 4:3; their height stays the game's, since the sky's gradient runs from its top to its bottom. With two players the
+// game puts the sky nearer (Background_InitBackgroundInfo: 5300 deep, its range from 4300 + 100), and its quad is 0.4%
+// narrower than the view there, which the console's border hides: widened, the window showed beside it, 2 or 3 columns
+// of an old frame at a 1680x720 window's sides. So in a picture wider than 4:3 the range is at least the view's at the
+// sky's depth with the margin one player's has (7320 for a view 7000 wide), before it is widened.
 
 #include "patches.h"
 #include "fzx_game.h"
@@ -50,6 +54,11 @@ RECOMP_PATCH void Background_Update(void) {
 
         background->horizontalRange = (background->scrollDepth + sBackgroundScale) * depthFovRatio * 1.2f;
         background->verticalRange = background->horizontalRange * background->aspectRatio;
+        // @recomp At least as wide as the view at the sky's depth, with one player's margin, then widened.
+        if (widen > 1.0f) {
+            background->horizontalRange =
+                MAX(background->horizontalRange, background->skyboxDepth * depthFovRatio * (7320.0f / 7000.0f));
+        }
         background->horizontalRange *= widen;
 
         xScale = camera->xzNormalizedX;
