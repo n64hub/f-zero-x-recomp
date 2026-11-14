@@ -44,7 +44,8 @@ finding that explains the game's code goes here or beside that code.
 - **Widescreen.** RecompFrontend's Graphics tab defaults to Aspect Ratio Expand, HUD Placement 16:9, Resolution Auto
   and Framerate Display. RT64 widens the 3D; the rest is the game's to say. `patches/widescreen.c` widens the race's
   sky, floor and clouds, which the game sizes to a 4:3 view, by the window's aspect ratio (`recomp_get_aspect_ratio`,
-  4:3 with Aspect Ratio Original). The game draws a black border round a race, a console's too: its scissor keeps the
+  4:3 with Aspect Ratio Original), and with two players first to the view at the sky's depth: the game's two-player
+  sky is 0.4% narrower than the view, which only its border hides. The game draws a black border round a race, a console's too: its scissor keeps the
   3D in from 4:3's edges (12, 16, 308, 224 with one player, 12-307 for the halves of two), and RT64 keeps that as far in
   from the window's. So `widescreen.c`'s `Camera_Draw`, which sets every race view's scissor, opens one or two
   players' views to the picture's edges (`gEXSetScissor`) in a picture wider than 4:3. The game clears the depth
