@@ -52,9 +52,15 @@ finding that explains the game's code goes here or beside that code.
   only inside its scissor, and a second clear over the whole picture cost a quarter of the presents at 4K and set off
   a crash in RT64's render to RAM on the web, so there is none. The one-player view's viewport is the whole 320x240
   (`aVpFullScreen`, in the MIO0 of `course_track_gfx`); the top half's starts 4 lines down, so its scissor does too.
-  The other screens (the title, the menus, Records, the GP's ending) draw in the game's 12, 8, 308, 232 frame, and its
-  patched `func_80069698` enlarges that to the whole picture after each one draws, before the transition, whose
-  background is the frame: the framebuffer loaded as a texture a few rows at a time, which RT64 takes from what it drew.
+  The other screens (the title, the menus, Records, the GP's ending) draw in the game's 12, 8, 308, 232 frame, which
+  RT64 kept at 4:3 in the middle of a wider picture, black above and below too, a backdrop as wide as its scissor
+  stretched across the window. The patched `func_80069698` hands each one's commands, its transition's with them, to
+  `patches/screen.c`, which scales the screen about its middle until the frame fills the picture's height (240/224;
+  240/216 from line 16 where the title's art, black above it, is the backdrop), or its width in a window no wider than
+  4:3 (320/296): its rectangles point sampled and kept at their shape (`gEXSetRectAspect`), fill
+  rectangles in two halves that meet in the middle since RT64 stretches one as wide as its scissor whatever the aspect,
+  its scissors and viewports with them, and the lists it calls copied and scaled the same way.
+  A transition's background, the frame copied from the framebuffer, is taken from where the screen was scaled to.
   Three or four players' quarters keep the game's border, and each screen's first three frames are cleared to black so
   the last one's picture isn't left beside them. The race's HUD is placed by N64Recomp hooks (`us.toml`, `[[patches.hook]]`) at the start of each
   function that draws a part of it, which write RT64's `gEXSetRectAlign` into its display list
