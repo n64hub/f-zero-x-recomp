@@ -49,13 +49,13 @@ the pause menu's Quit to the main menu and a minute on Rainbow Road. Play them w
 
 ## The shader list
 
-`src/rt64_shaders.txt` holds 78 shaders: 8 for the boot (the launcher, the title and the main menu), then a section a
-course, the 24 of the Jack, Queen, King and Joker cups, 53-63 a section, most of them in every section. It was recorded
-in headless Chrome at 1256x645 by `tools/record_shaders.sh`, a page load a course, about 30 minutes in all; its header
-says what each section played and what it leaves out. The boot's sixth, the menus' frame enlarged to a picture wider
-than 4:3 (`patches/widescreen.c`), was recorded the same way after, with `--only mute-city`, its seventh is one the
-attract demo's two-player race missed in a play, and its eighth the frame enlarged over a menu's fade, which a play
-of the transitions missed.
+`src/rt64_shaders.txt` holds 92 shaders: 48 for the boot (the launcher, the title, the main menu and the other menus),
+then a section a course, the 24 of the Jack, Queen, King and Joker cups, 28-40 a section, most of them in every section.
+It was recorded in headless Chrome at 1256x645 by `tools/record_shaders.sh`, a page load a section, about 30 minutes in
+all; its header says what each section played and what it leaves out. Its last section, "menus", is a boot section,
+so what machine select, the options, records, course select and the credits draw lands with the boot's. Twelve of the
+boot's were added by hand from plays: two a menu's fade drew, one the attract demo's two-player race missed, four a VS
+race of four players misses, four a GP race's end misses, and one a race at Mute City drew in Chrome.
 
 ## How it plays
 
