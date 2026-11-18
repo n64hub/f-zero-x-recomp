@@ -30,7 +30,7 @@ finding that explains the game's code goes here or beside that code.
   and writes it a moment after the game saves, so a test waits a few seconds before it stops the game. The Linux
   build's save check (N64Recomp-browser's `tools/frame_dump.mjs --saves`) plays `tools/save_plan.txt`, which sets
   Sound Mode to Mono in the options (the options menu saves as an option changes), then `tools/load_plan.txt` after a
-  restart with `saves/` behind symlinks, which reads Mono back at the title and saves Stereo.
+  restart with `saves/` behind symlinks, which reads +1 back at the title and saves w/o.
 - **Input.** RecompFrontend's default bindings, nothing of the game's own. Keyboard: WASD the stick, Space A, Left
   Shift B, Q Z, R R, E L, Enter Start, the arrows the C buttons. A test that posts `WM_KEYDOWN`/`WM_KEYUP` to the
   window can't hold Left Shift (SDL2 on Windows releases it at every pump when `GetKeyState` says it is up), so it

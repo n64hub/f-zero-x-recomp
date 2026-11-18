@@ -1,22 +1,19 @@
 # The load run of the desktop build's save check (N64Recomp-browser's tools/frame_dump.mjs --saves), after
-# tools/save_plan.txt, the program started again in the same folder: the game reads its SRAM as it boots, and Sound
-# Mode is Mono (gSettingSoundMode, 0x80111840, 1) at the title only if it came off the save (a new SRAM says Stereo,
-# 0). Nothing is written by then. Then the same route to the options sets it back to Stereo, a second save written
-# through the check's links.
+# tools/save_plan.txt, the program started again in the same folder: the game reads its SRAM as it boots, and VS
+# Handicap is +1 (gSettingVsHandicap, 0x800CE4D0, the word's top half) at the title only if it came off the save (a new
+# SRAM's is w/o, 0). Nothing is written by then. Then the same route to the options sets it back to w/o, a second save
+# written through the check's links.
 0 until 0x800DCE44 0xFF 0x0 90
-1 until 0x80111840 0xFFFF0000 0x10000 5
+1 until 0x800CE4D0 0xFFFF0000 0x10000 5
 1.5 shot title
 2 saves same
 3 until 0x800DCE44 0xFF 0x7 30 Enter
-5 key S 100
-5.5 until 0x800CD380 0xFFFFFFFF 0x5 10 S
-6 key D 100
-6.5 until 0x800CD380 0xFFFFFFFF 0x6 10 D
-7.5 until 0x800DCE44 0xFF 0x14 15 Space
-9.5 until 0x8011EDD8 0xFFFFFFFF 0x3 10 S
-10.5 shot options_mono
-11 key D 100
-11.5 until 0x80111840 0xFFFF0000 0x0 5
-12 shot options_stereo
-12.5 saves changed 15
-16 end
+5 until 0x800CD380 0xFFFFFFFF 0x5 10 S
+6 until 0x800CD380 0xFFFFFFFF 0x6 10 D
+7 until 0x800DCE44 0xFF 0x14 15 Space
+9 until 0x8011EDD8 0xFFFFFFFF 0x2 10 S
+10 shot options_loaded
+10.5 until 0x800CE4D0 0xFFFF0000 0x0 15 D
+11 shot options_saved
+11.5 saves changed 15
+15 end
