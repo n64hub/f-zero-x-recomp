@@ -59,7 +59,9 @@ finding that explains the game's code goes here or beside that code.
   240/216 from line 16 where the title's art, black above it, is the backdrop), or its width in a window no wider than
   4:3 (320/296): its rectangles point sampled and kept at their shape (`gEXSetRectAspect`), fill
   rectangles in two halves that meet in the middle since RT64 stretches one as wide as its scissor whatever the aspect,
-  its scissors and viewports with them, and the lists it calls copied and scaled the same way.
+  its scissors and viewports with them, and the lists it calls copied and scaled the same way. Its viewports are
+  centred in the picture (`func_80069698` in `patches/widescreen.c`): RT64 widens one that spans the screen's width,
+  and machine select's are, one a machine, each its middle at the machine's slot.
   A transition's background, the frame copied from the framebuffer, is taken from where the screen was scaled to.
   Three or four players' quarters keep the game's border, and each screen's first three frames are cleared to black so
   the last one's picture isn't left beside them. The race's HUD is placed by N64Recomp hooks (`us.toml`, `[[patches.hook]]`) at the start of each
