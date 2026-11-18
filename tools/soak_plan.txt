@@ -1,0 +1,70 @@
+# The desktop build's soak plan (new-recomp item 8d), for tools/frame_dump.mjs --soak 180: one round through each of
+# the game's modes, about 177 s with the boot, failing on a crash, an exit, or a picture that stands still for 10 s.
+# From the title (Start, Enter) to the main menu, then a race in each mode the main menu offers, each reached by A
+# (Space) through its menus as a player does (cup and difficulty, course select, machine select, machine settings): GP
+# Race, Time Attack, Death Race, VS Battle with two players, and Practice, the cursor moved between them with the
+# D-pad (J, L, K). Each race is 10 s of random input that is safe anywhere in a race (the stick, A, B, Z, L, R and the
+# C buttons, never Start), its machine driven by the computer (RACER_STATE_CPU_CONTROLLED in gRacers[i].flags,
+# 0x802C4924 and 0x3A8 on), then Start until the game pauses (gGamePaused, the byte at 0x800DCE5C), Up to the pause
+# menu's last option once it takes input (60 frames after it opens), Quit, and back to the main menu. VS Battle needs
+# two controllers: the plan tells the game a second is connected (gControllersConnected, 0x800DD228) and has player 2
+# read player 1's port (gPlayerControlPorts[1], 0x800DD21C), so one key press is both players'. Each step waits on the
+# game's own mode, gGameMode (0x800DCE44): 7 the main menu, 1 GP Race, 0xE Time Attack, 0x15 Death Race, 3 VS Battle
+# of two, 2 Practice; the plan's log peeks the mode, the players and the course in each race.
+2 until 0x800DCE44 0xFF 7 60 Enter
+5 until 0x800DCE44 0xFF 1 40 Space
+5.5 or 0x802C4924 0x800000
+6 peek 0x800DCE44,0x800CD000,0x800F8514
+6 random a,d,Space,Shift,q,e,r,Up,Down,Left,Right
+16 random off
+17 until 0x800DCE5C 0xFF000000 0x01000000 10 Enter
+19.5 key i
+20.5 key Space
+21 until 0x800DCE44 0xFF 7 20
+24 key l
+25 until 0x800DCE44 0xFF 0xE 40 Space
+25.5 or 0x802C4924 0x800000
+26 peek 0x800DCE44,0x800CD000,0x800F8514
+26 random a,d,Space,Shift,q,e,r,Up,Down,Left,Right
+36 random off
+37 until 0x800DCE5C 0xFF000000 0x01000000 10 Enter
+39.5 key i
+40.5 key Space
+41 until 0x800DCE44 0xFF 7 20
+44 key l
+45 until 0x800DCE44 0xFF 0x15 40 Space
+45.5 or 0x802C4924 0x800000
+46 peek 0x800DCE44,0x800CD000,0x800F8514
+46 random a,d,Space,Shift,q,e,r,Up,Down,Left,Right
+56 random off
+57 until 0x800DCE5C 0xFF000000 0x01000000 10 Enter
+59.5 key i
+60.5 key Space
+61 until 0x800DCE44 0xFF 7 20
+64 peek 0x800DD218,0x800DD21C,0x800DD228
+64.5 poke 0x800DD228 2
+65 poke 0x800DD21C 0
+65.5 key l
+66.5 until 0x800DCE44 0xFF 3 40 Space
+67 or 0x802C4924 0x800000
+67 or 0x802C4CCC 0x800000
+67.5 peek 0x800DCE44,0x800CD000,0x800F8514
+67.5 random a,d,Space,Shift,q,e,r,Up,Down,Left,Right
+77.5 random off
+78.5 until 0x800DCE5C 0xFF000000 0x01000000 10 Enter
+81 key i
+82 key Space
+82.5 until 0x800DCE44 0xFF 7 20
+85.5 key j
+86.5 key j
+87.5 key k
+88.5 until 0x800DCE44 0xFF 2 40 Space
+89 or 0x802C4924 0x800000
+89.5 peek 0x800DCE44,0x800CD000,0x800F8514
+89.5 random a,d,Space,Shift,q,e,r,Up,Down,Left,Right
+99.5 random off
+100.5 until 0x800DCE5C 0xFF000000 0x01000000 10 Enter
+103 key i
+104 key Space
+104.5 until 0x800DCE44 0xFF 7 20
+106.5 end
