@@ -1,5 +1,5 @@
 # The desktop build's soak plan (new-recomp item 8d), for tools/frame_dump.mjs --soak 180: one round through each of
-# the game's modes, about 170 s with the boot, failing on a crash, an exit, or a picture that stands still for 10 s.
+# the game's modes, about 177 s with the boot, failing on a crash, an exit, or a picture that stands still for 10 s.
 # From the title (Start, Enter) to the main menu, then a race in each mode the main menu offers, each reached by A
 # (Space) through its menus as a player does (cup and difficulty, course select, machine select, machine settings): GP
 # Race, Time Attack, Death Race, VS Battle with two players, and Practice, the cursor moved between them with the
