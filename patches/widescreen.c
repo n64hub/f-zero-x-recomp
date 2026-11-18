@@ -185,6 +185,12 @@ RECOMP_PATCH Gfx* Camera_Draw(Gfx* gfx, s32 scissorBoxType, s32 cameraIndex) {
 // framed screen it is scaled with the screen, so it covers the scaled screen as it covers the frame on a console, and
 // its background is the frame as it was before it was scaled (below). A race, which draws to the edges itself, has
 // only fades (Transition_HideSet, Transition_AppearSet), drawn to the edges below.
+//
+// A framed screen's models are placed in its 4:3 picture (gEXSetViewportAlign's centre origin for its viewports). RT64
+// widens a viewport to the window when it spans the screen's width, clipped by its clip ratio, and machine select draws
+// each of its 30 machines in a viewport as big as the screen with its middle at the machine's slot: the grid was spread
+// across the window, wider the wider it was, so the machine under the cursor stood away from it, and at 32:9 the first
+// columns stood outside the picture.
 extern s32 gGameModeChangeState;
 extern s16 D_i2_80106DA0;
 extern Gfx* (*sGamemodeDrawFuncs[])(Gfx*);
@@ -345,6 +351,10 @@ RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
             gEXPopOtherMode(gfx++);
         }
     }
+    // @recomp A framed screen's viewports in its picture, its models with them (above).
+    if (fill > 0.0f) {
+        gEXSetViewportAlign(gfx++, G_EX_ORIGIN_CENTER, 0, 0);
+    }
     start = gfx;
     if (drawn) {
         gfx = sGamemodeDrawFuncs[GET_MODE(gGameMode)](gfx);
@@ -357,6 +367,9 @@ RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
         }
         sFrameBufferFill[index] = fill;
         sFrameBufferCentreY[index] = centreY;
+    }
+    if (fill > 0.0f) {
+        gEXSetViewportAlign(gfx++, G_EX_ORIGIN_NONE, 0, 0);
     }
     return gfx;
 }
