@@ -13,9 +13,12 @@
   "course, the 24 of the Jack, Queen, King and Joker cups: GP Race from the main menu with A, through machine select and",
   "the machine's settings, the course set at machine select where the race reads it (gCourseIndex, 0x800F8514), then 40 s",
   "of the game's time with the computer driving player 1's machine (RACER_STATE_CPU_CONTROLLED in gRacers[0]'s flags,",
-  "0x802C4924), and the pause menu. Not recorded: the X cup's courses, which the game makes up each time from the same",
-  "venues, Death Race, Time Attack, VS, the results, records and options screens, and the course editor. Flags follow",
-  "settings (filtering, HDR, MSAA, upscaling), so a change to one of those defaults means recording again."
+  "0x802C4924), and the pause menu. Last, \"menus\" (boot, so into section 0): machine select and its settings, then",
+  "options, records' course select and a course's records, course select and the credits, each reached by the game's",
+  "next mode (gQueuedGameMode, 0x800DCE48), the menus' screens drawn point sampled at the picture's full height",
+  "(patches/screen.c). Not recorded: the X cup's courses, which the game makes up each time from the same venues, Death",
+  "Race, Time Attack, VS, the results and the course editor. Flags follow settings (filtering, HDR, MSAA, upscaling), so",
+  "a change to one of those defaults means recording again."
  ],
  "load": [
   [
@@ -2198,6 +2201,94 @@
     [
      "wait",
      2000
+    ]
+   ]
+  },
+  {
+   "name": "menus",
+   "boot": true,
+   "steps": [
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 8",
+     30000
+    ],
+    [
+     "wait",
+     3000
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 9",
+     30000
+    ],
+    [
+     "wait",
+     3000
+    ],
+    [
+     "eval",
+     "n64w(0x800DCE48, 0x8014)"
+    ],
+    [
+     "wait",
+     5000
+    ],
+    [
+     "eval",
+     "n64w(0x800DCE48, 0x8013)"
+    ],
+    [
+     "wait",
+     5000
+    ],
+    [
+     "pressUntil",
+     "Space",
+     " ",
+     32,
+     150,
+     1500,
+     "(n64r(0x800DCE44) & 0xFF) == 6",
+     30000
+    ],
+    [
+     "wait",
+     4000
+    ],
+    [
+     "eval",
+     "n64w(0x800DCE48, 0x800A)"
+    ],
+    [
+     "wait",
+     5000
+    ],
+    [
+     "eval",
+     "n64w(0x800DCE48, 0x800B)"
+    ],
+    [
+     "wait",
+     6000
+    ],
+    [
+     "eval",
+     "n64w(0x800DCE48, 0x8007)"
+    ],
+    [
+     "wait",
+     5000
     ]
    ]
   }
