@@ -9,8 +9,7 @@ What is the game's own stays here: the `EMSCRIPTEN` branches of `CMakeLists.txt`
 `tools/build_web.sh`, the prebuilt shader list (`src/rt64_shaders.txt`, recorded by `tools/shader_plan.json`; the
 list's header says how to record it again) and the play plans (`tools/play_plan.json`, `tools/play_plan_extended.json`).
 The rest is N64Recomp-browser's: `docs/porting.md` (WebGPU and the shaders, prebuilt shader lists, Emscripten),
-`docs/playing.md` (playing and measuring a page), `docs/forks.md` and `docs/findings.md`. Every play of this game's
-page is a line in N64Recomp-browser's `plays.jsonl` (game `fzx`), never a record here.
+`docs/playing.md` (playing and measuring a page), `docs/forks.md` and `docs/findings.md`.
 
 ## Build it
 
@@ -60,9 +59,9 @@ of the transitions missed.
 
 ## How it plays
 
-The regular plan on a desktop GPU at 1256x645, from the page as the port first built it (N64Recomp-browser's
-`plays.jsonl`, game `fzx`): in Chrome, uncapped, 357.8 presents a second, held by the uncapped rate (360), no frame
-gap over 50 ms, no sound short; in Firefox with its default prefs, 239.9, the display's rate, one gap of 114 ms.
-Neither missed a shader or had a WebGPU error or exception. Chrome builds the whole list behind the launcher; Firefox builds each
-section as it is reached and waits 2.2 s for Mute City's as the race starts. The game itself runs a one-player race at
-60 frames a second, as on a console, and RT64 interpolates the rest.
+The regular plan on a desktop GPU at 1256x645, from the page as the port first built it: in Chrome, uncapped, 357.8
+presents a second, held by the uncapped rate (360), no frame gap over 50 ms, no sound short; in Firefox with its default
+prefs, 239.9, the display's rate, one gap of 114 ms. Neither missed a shader or had a WebGPU error or exception. Chrome
+builds the whole list behind the launcher; Firefox builds each section as it is reached and waits 2.2 s for Mute City's
+as the race starts. The game itself runs a one-player race at 60 frames a second, as on a console, and RT64 interpolates
+the rest.
