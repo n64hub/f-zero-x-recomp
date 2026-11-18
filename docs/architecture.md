@@ -27,7 +27,10 @@ finding that explains the game's code goes here or beside that code.
   vector unit uses SSE4.1, so `RecompiledFuncs` builds with `-march=nehalem` on x86-64.
 - **Jump tables.** N64Recomp finds all of the game's itself, so `us.toml` lists none by hand.
 - **Saves.** SRAM, 32 KB. `main.cpp` declares `SaveType::Sram`; the runtime keeps it in `saves/fzerox.n64.us.1.0.bin`
-  and writes it a moment after the game saves, so a test waits a few seconds before it stops the game.
+  and writes it a moment after the game saves, so a test waits a few seconds before it stops the game. The Linux
+  build's save check (N64Recomp-browser's `tools/frame_dump.mjs --saves`) plays `tools/save_plan.txt`, which sets
+  Sound Mode to Mono in the options (the options menu saves as an option changes), then `tools/load_plan.txt` after a
+  restart with `saves/` behind symlinks, which reads Mono back at the title and saves Stereo.
 - **Input.** RecompFrontend's default bindings, nothing of the game's own. Keyboard: WASD the stick, Space A, Left
   Shift B, Q Z, R R, E L, Enter Start, the arrows the C buttons. A test that posts `WM_KEYDOWN`/`WM_KEYUP` to the
   window can't hold Left Shift (SDL2 on Windows releases it at every pump when `GetKeyState` says it is up), so it

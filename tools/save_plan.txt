@@ -1,0 +1,20 @@
+# The save run of the desktop build's save check (N64Recomp-browser's tools/frame_dump.mjs --saves, with
+# tools/load_plan.txt; docs/architecture.md, Saves): from the title (gGameMode, 0x800DCE44, 0), Start to the main menu
+# (7), the stick down and right to OPTIONS (gSelectedMode, 0x800CD380, 5 then 6), A into it (0x14), down to Sound Mode
+# (gOptionsCurrentRow, 0x8011EDD8, 3) and right to Mono: the options menu saves the settings to SRAM as it changes one
+# (Save_SaveSettingsProfiles), and gSettingSoundMode (0x80111840, an s16 in the word's top half) is 1. A first start
+# writes a new SRAM as it boots, so the plan stays on the options a while for the second write to reach
+# saves/fzerox.n64.us.1.0.bin before the program is stopped. Menu keys are held 100 ms (Xvfb repeats a longer hold).
+0 until 0x800DCE44 0xFF 0x0 90
+2 until 0x800DCE44 0xFF 0x7 30 Enter
+4 key S 100
+4.5 until 0x800CD380 0xFFFFFFFF 0x5 10 S
+5 key D 100
+5.5 until 0x800CD380 0xFFFFFFFF 0x6 10 D
+6.5 until 0x800DCE44 0xFF 0x14 15 Space
+8.5 until 0x8011EDD8 0xFFFFFFFF 0x3 10 S
+9.5 key D 100
+10 until 0x80111840 0xFFFF0000 0x10000 5
+10.5 shot mono
+16 saves changed 15
+20 end
