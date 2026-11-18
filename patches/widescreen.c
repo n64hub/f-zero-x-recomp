@@ -186,11 +186,12 @@ RECOMP_PATCH Gfx* Camera_Draw(Gfx* gfx, s32 scissorBoxType, s32 cameraIndex) {
 // its background is the frame as it was before it was scaled (below). A race, which draws to the edges itself, has
 // only fades (Transition_HideSet, Transition_AppearSet), drawn to the edges below.
 //
-// A framed screen's models are placed in its 4:3 picture (gEXSetViewportAlign's centre origin for its viewports). RT64
-// widens a viewport to the window when it spans the screen's width, clipped by its clip ratio, and machine select draws
-// each of its 30 machines in a viewport as big as the screen with its middle at the machine's slot: the grid was spread
-// across the window, wider the wider it was, so the machine under the cursor stood away from it, and at 32:9 the first
-// columns stood outside the picture.
+// A framed screen's models are placed in its 4:3 picture (gEXSetViewportAlign's centre origin for its viewports, which
+// RT64 then takes as from the screen's middle, so the game's own from its left edge are moved back by half its width,
+// in quarter pixels). RT64 widens a viewport to the window when it spans the screen's width, clipped by its clip ratio,
+// and machine select draws each of its 30 machines in a viewport as big as the screen with its middle at the machine's
+// slot: the grid was spread across the window, wider the wider it was, so the machine under the cursor stood away from
+// it, and at 32:9 the first columns stood outside the picture.
 extern s32 gGameModeChangeState;
 extern s16 D_i2_80106DA0;
 extern Gfx* (*sGamemodeDrawFuncs[])(Gfx*);
@@ -353,7 +354,7 @@ RECOMP_PATCH Gfx* func_80069698(Gfx* gfx) {
     }
     // @recomp A framed screen's viewports in its picture, its models with them (above).
     if (fill > 0.0f) {
-        gEXSetViewportAlign(gfx++, G_EX_ORIGIN_CENTER, 0, 0);
+        gEXSetViewportAlign(gfx++, G_EX_ORIGIN_CENTER, -(SCREEN_WIDTH / 2) * 4, 0);
     }
     start = gfx;
     if (drawn) {
