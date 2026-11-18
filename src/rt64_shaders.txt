@@ -16,9 +16,10 @@
 # (patches/screen.c). Not recorded: the X cup's courses, which the game makes up each time from the same venues, Death
 # Race, Time Attack, VS, the results and the course editor. Flags follow settings (filtering, HDR, MSAA, upscaling), so
 # a change to one of those defaults means recording again.
-# Section 0's last eleven before "menus" were added by hand from plays: two a menu's fade drew, one the attract demo's
-# two-player race misses, four a VS race of four players misses (tools/play_plan_pads.json), and four a GP race's end
-# misses (its finish and results, 3840 wide, in Chrome and Firefox alike).
+# Section 0's last twelve before "menus" were added by hand from plays: two a menu's fade drew, one the attract demo's
+# two-player race misses, four a VS race of four players misses (tools/play_plan_pads.json), four a GP race's end
+# misses (its finish and results, 3840 wide, in Chrome and Firefox alike), and one a race at Mute City drew in a Chrome
+# play (tools/play_plan.json).
 00404240 00000c3f fcffffff fffcf279 04cb540b
 00404240 00000c3f fc119623 ff2fffff 04cb540b
 00504240 00003c3f fcffffff fffcf279 04cb540b
@@ -35,6 +36,7 @@
 0f0a4000 00082c3f fcffffff fffcf279 0ccb5404
 00000001 00203c3f fc11fe23 fffff3f9 04cb540b
 00504240 00003c3f fc11fe23 fffff3f9 04cb540b
+00504240 00000c3f fcffffff fffcf67b 0ccb540b
 00404240 00000c3f fcffffff fffcf279 0ccb540b
 00404240 00000c3f fc119623 ff2fffff 0ccb540b
 00404240 00000c3f fc11fe23 fffff3f9 0ccb540b
