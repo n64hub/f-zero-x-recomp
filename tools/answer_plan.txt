@@ -1,0 +1,21 @@
+# The desktop build's answer plan (ops docs/new-recomp.md, 4d: a press reaches the picture at once and the view stays
+# where the stick leaves it), for frame_dump.mjs's answer steps with its stand-in pad and --no-dump, at the default
+# limits (500 ms to answer, 1000 ms to settle). Its steps are capture_window.ps1's, at seconds since the program
+# started (an until's wait moves the rest on).
+# It reaches the main menu (Select Mode, gGameMode 7 at 0x800DCE44) from the title with Start (Enter), a menu that
+# holds still, and moves its cursor right on the stick (leftx) and on D, each moved back by an untimed step, then
+# right on the stick held 1.5 s. The game has no view a player turns: its racing view moves by itself.
+# v0.1.16 passes: the stick's move answered in 58 ms and settled in 3 ms, D's in 40 and 15 ms, the 1.5 s hold's in
+# 45 and 2 ms (drift 2.4%).
+2 until 0x800DCE44 0xFF 7 60 Enter
+5 shot menu
+6 answer menu-stick leftx 32767 0.4 500 1000
+11 pad leftx -32768
+11.4 pad leftx 0
+13 shot back1
+14 answer menu-key key:d 1 0.4 500 1000
+19 key a 100
+21 shot back2
+22 answer menu-hold leftx 32767 1.5 500 1000
+27 shot end
+28 end
